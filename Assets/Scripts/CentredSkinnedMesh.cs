@@ -1,6 +1,8 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class CentredSkinnedMesh : MonoBehaviour
 {
     [Serializable]
@@ -33,7 +35,8 @@ public class CentredSkinnedMesh : MonoBehaviour
         }
     }
 
-
+    [SerializeField]
+    Vector3 m_CentreOfMass; 
     [SerializeField]
     BoneMass[] m_BoneMasses;
     [SerializeField]
@@ -65,5 +68,10 @@ public class CentredSkinnedMesh : MonoBehaviour
         com.pos /= summedWeight;
        
         return com.pos;
+    }
+
+    void Update()
+    {
+        m_CentreOfMass = CalculateCentreOfMass();
     }
 }

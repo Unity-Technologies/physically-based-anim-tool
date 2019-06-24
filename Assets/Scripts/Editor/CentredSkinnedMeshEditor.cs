@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -6,6 +7,7 @@ using UnityEngine;
 [CustomEditor(typeof(CentredSkinnedMesh))]
 public class CentredSkinnedMeshEditor : Editor
 {
+    SerializedProperty m_CentreOfMassProp;
     SerializedProperty m_BoneMassesProp;
 
     static readonly GUILayoutOption k_BoneWidth = GUILayout.Width (150f);
@@ -15,6 +17,7 @@ public class CentredSkinnedMeshEditor : Editor
 
     void OnEnable ()
     {
+        m_CentreOfMassProp = serializedObject.FindProperty("m_CentreOfMass");
         m_BoneMassesProp = serializedObject.FindProperty ("m_BoneMasses");
     }
 
@@ -50,5 +53,21 @@ public class CentredSkinnedMeshEditor : Editor
         }
 
         serializedObject.ApplyModifiedProperties ();
+    }
+
+    public void OnSceneGUI()
+    {
+        float size = HandleUtility.GetHandleSize(m_CentreOfMassProp.vector3Value) * 0.5f;
+        Vector3 snap = Vector3.one * 0.01f;
+
+        EditorGUI.BeginChangeCheck();
+        Vector3 newTargetPosition = Handles.PositionHandle(m_CentreOfMassProp.vector3Value, Quaternion.identity);
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(target, "Change Centre Of Mass Position");
+            
+            // TODO: put root movement code here.
+            Debug.Log("moving");
+        }
     }
 }
