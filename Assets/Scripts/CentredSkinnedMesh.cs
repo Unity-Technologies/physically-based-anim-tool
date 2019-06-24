@@ -4,6 +4,12 @@ using UnityEngine;
 public class CentredSkinnedMesh : MonoBehaviour
 {
     [Serializable]
+    public struct centerOfMass
+    {
+        public Vector3 pos;
+    }
+
+    [Serializable]
     public struct BoneMass
     {
         public Transform bone;
@@ -30,6 +36,8 @@ public class CentredSkinnedMesh : MonoBehaviour
 
     [SerializeField]
     BoneMass[] m_BoneMasses;
+    [SerializeField]
+    centerOfMass com = new centerOfMass();
 
     public void SetBoneMasses (Transform[] bones, float[] weightedMasses)
     {
@@ -47,15 +55,15 @@ public class CentredSkinnedMesh : MonoBehaviour
     public Vector3 CalculateCentreOfMass ()
     {
         float summedWeight = 0f;
-        Vector3 com = Vector3.zero;
+        com.pos = Vector3.zero;
         for (int i = 0; i < m_BoneMasses.Length; i++)
         {
-            com += m_BoneMasses[i].GetBoneCentreOfMass ();
+            com.pos += m_BoneMasses[i].GetBoneCentreOfMass ();
             summedWeight += m_BoneMasses[i].relativeDensity * m_BoneMasses[i].mass;
         }
 
-        com /= summedWeight;
-        
-        return com;
+        com.pos /= summedWeight;
+       
+        return com.pos;
     }
 }
