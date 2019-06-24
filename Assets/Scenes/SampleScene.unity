@@ -808,8 +808,42 @@ PrefabInstance:
       propertyPath: m_BoneMasses.Array.data[0].relativeDensity
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+      propertyPath: m_CentreOfMass.x
+      value: 0.0047783065
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+      propertyPath: m_CentreOfMass.y
+      value: 1.0708377
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+      propertyPath: m_CentreOfMass.z
+      value: 0.012588923
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+      propertyPath: com.pos.x
+      value: 0.0047783065
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+      propertyPath: com.pos.y
+      value: 1.0708377
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+      propertyPath: com.pos.z
+      value: 0.012588923
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+      propertyPath: m_SkeletonRoot
+      value: 
+      objectReference: {fileID: 742777689}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a5674d01884853d4e8f2386a171e14d9, type: 3}
+--- !u!1 &742777689 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100688, guid: a5674d01884853d4e8f2386a171e14d9,
+    type: 3}
+  m_PrefabInstance: {fileID: 742777688}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &746380755
 GameObject:
   m_ObjectHideFlags: 0
