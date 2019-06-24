@@ -42,6 +42,9 @@ public class CentredSkinnedMesh : MonoBehaviour
     [SerializeField]
     centerOfMass com = new centerOfMass();
 
+    [SerializeField]
+    GameObject m_SkeletonRoot;
+
     public void SetBoneMasses (Transform[] bones, float[] weightedMasses)
     {
         if(bones.Length != weightedMasses.Length)
