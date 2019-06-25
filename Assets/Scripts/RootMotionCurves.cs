@@ -111,12 +111,22 @@ public struct RootMotionCurves
         };
     }
 
-    public Vector3 GetVector3(float time)
+    public RootMotionCurves ConvertRootToCOM()
+    {
+        return this;    // TODO: use COM calc to implement this.
+    }
+
+    public RootMotionCurves ConvertCOMToRoot()
+    {
+        return this;    // TODO: use inverse COM calc to implement this.
+    }
+
+    Vector3 GetVector3(float time)
     {
         return new Vector3(rootTXCurve.Evaluate(time), rootTYCurve.Evaluate(time), rootTZCurve.Evaluate(time));
     }
 
-    public Quaternion GetQuaternion(float time)
+    Quaternion GetQuaternion(float time)
     {
         return new Quaternion(rootQXCurve.Evaluate(time), rootQYCurve.Evaluate(time), rootQZCurve.Evaluate(time), rootQWCurve.Evaluate(time));
     }

@@ -170,4 +170,9 @@ public static class AnimationWindowInfo
             rootQWCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootQWCurveBinding)
         };
     }
+
+    public static void WriteRootMotionCurves(RootMotionCurves rootMotionCurves)
+    {
+        // TODO: complete this.
+    }
 }
