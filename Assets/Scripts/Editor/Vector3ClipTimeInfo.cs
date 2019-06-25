@@ -13,4 +13,7 @@ public struct Vector3ClipTimeInfo
     public Keyframe nextX;
     public Keyframe nextY;
     public Keyframe nextZ;
+    
+    
+    // TODO: in COM struct create method to create Vector velocity which takes Vector3ClipTimeInfo as parameter.
 }
