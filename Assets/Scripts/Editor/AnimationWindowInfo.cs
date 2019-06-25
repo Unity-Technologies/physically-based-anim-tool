@@ -7,49 +7,48 @@ using Object = UnityEngine.Object;
 public static class AnimationWindowInfo
 {
     static Type s_AnimationWindowType;
-    //static Type s_AnimEditorType;
     static Type s_WindowStateType;
     static FieldInfo s_AnimWindowStateField;
-    static PropertyInfo s_CurrentTimeProp;
     static FieldInfo s_AnimEditorField;
-    static object s_AnimationWindow;
-    static object s_AnimEditor;
+
     static object s_AnimWindowState;
-    static float s_CurrentTime;
-    static EditorCurveBinding s_ComXBinding;
-    static EditorCurveBinding s_ComYBinding;
-    static EditorCurveBinding s_ComZBinding;
-    static AnimationCurve s_Curve;
-    static Keyframe[] s_XKeyframes;
-    static Keyframe[] s_YKeyframes;
-    static Keyframe[] s_ZKeyframes;
+
+    //static float s_CurrentTime;
+    //static EditorCurveBinding s_ComXBinding;
+    //static EditorCurveBinding s_ComYBinding;
+    //static EditorCurveBinding s_ComZBinding;
+    //static AnimationCurve s_Curve;
+    //static Keyframe[] s_XKeyframes;
+    //static Keyframe[] s_YKeyframes;
+    //static Keyframe[] s_ZKeyframes;
     static AnimationClip s_AnimationClip;
     static PropertyInfo s_RootGameObjectProp;
-    static PropertyInfo s_AnimationWindowSelectionItemProp;
     static GameObject s_RootGameObject;
+
+    /*static AnimationCurve s_RootTXCurve;
+    static AnimationCurve s_RootTYCurve;
+    static AnimationCurve s_RootTZCurve;
+    static AnimationCurve s_RootQXCurve;
+    static AnimationCurve s_RootQYCurve;
+    static AnimationCurve s_RootQZCurve;
+    static AnimationCurve s_RootQWCurve;
+    static RootMotionCurves s_RootMotionCurves;*/
+
+    static EditorCurveBinding s_RootTXCurveBinding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+    static EditorCurveBinding s_RootTYCurveBinding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.y");
+    static EditorCurveBinding s_RootTZCurveBinding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.z");
+    static EditorCurveBinding s_RootQXCurveBinding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.x");
+    static EditorCurveBinding s_RootQYCurveBinding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.y");
+    static EditorCurveBinding s_RootQZCurveBinding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.z");
+    static EditorCurveBinding s_RootQWCurveBinding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.w");
+
 
     static AnimationWindowInfo()
     {
         GetTypeInfo();
-        //EditorApplication.update += CheckInfoUpdate;
     }
 
-    static void CheckInfoUpdate ()
-    {
-        
-    }
-
-    /*static UnityEngine.Object GetOpenAnimationWindow()
-    {
-        UnityEngine.Object[] openAnimationWindows = Resources.FindObjectsOfTypeAll(GetAnimationWindowType());
-        if (openAnimationWindows.Length > 0)
-        {
-            return openAnimationWindows[0];
-        }
-        return null;
-    }*/
-
-    [MenuItem("Tools/Print")]
+    /*[MenuItem("Tools/Print")]
     public static void PrintInfo()
     {
         BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
@@ -118,302 +117,57 @@ public static class AnimationWindowInfo
         }
         
         Debug.Log(log);
-    }
+    }*/
 
     static void GetTypeInfo()
     {
         BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
-        
+
         s_AnimationWindowType = System.Type.GetType("UnityEditor.AnimationWindow,UnityEditor");
         s_AnimEditorField = s_AnimationWindowType.GetField("m_AnimEditor", flags);
- 
+
         Type animEditorType = s_AnimEditorField.FieldType;
         s_AnimWindowStateField = animEditorType.GetField("m_State", flags);
         s_WindowStateType = s_AnimWindowStateField.FieldType;
-        s_CurrentTimeProp = s_WindowStateType.GetProperty("currentTime", flags);
-        
-        s_AnimationWindowSelectionItemProp = animEditorType.GetProperty("selection", flags);
-        Type animationWindowSelectionItemType = s_AnimationWindowSelectionItemProp.PropertyType;
-        s_RootGameObjectProp = animationWindowSelectionItemType.GetProperty("rootGameObject", flags);
-        
-        Debug.Log("got type info");
+
     }
 
-    static void GetWindowInfo()
+    static void GetClip()
     {
-        if(s_CurrentTimeProp == null)
+        if (s_WindowStateType == null)
             GetTypeInfo();
-        
+
         Object[] openAnimationWindows = Resources.FindObjectsOfTypeAll(s_AnimationWindowType);
-        s_AnimationWindow = openAnimationWindows.Length > 0 ? openAnimationWindows[0] : null;
+        object animationWindow = openAnimationWindows.Length > 0 ? openAnimationWindows[0] : null;
 
-        if (s_AnimationWindow == null)
-        {
+        if (animationWindow == null)
             Debug.Log("No animation window currently open.");
-            return;
-        }
-        
-        s_AnimEditor = s_AnimEditorField.GetValue(s_AnimationWindow);
 
-        if (s_AnimEditor == null)
-        {
+        var animEditor = s_AnimEditorField.GetValue(animationWindow);
+
+        if (animEditor == null)
             Debug.Log("No animation editor found in animation window.");
-            return;
-        }
-        
-        s_AnimWindowState = s_AnimWindowStateField.GetValue(s_AnimEditor);
 
-        if (s_AnimWindowState == null)
-        {
-            Debug.Log("No animation window state found in animation editor.");
-        }
-
-        object animationWindowSelectionItem = s_AnimationWindowSelectionItemProp.GetValue(s_AnimEditor);
-
-        s_RootGameObject = (GameObject)s_RootGameObjectProp.GetValue(animationWindowSelectionItem);
+        BindingFlags flags = BindingFlags.InvokeMethod | BindingFlags.Public;
+        object animWindowState = s_AnimWindowStateField.GetValue(animEditor);
+        s_AnimationClip =
+            (AnimationClip) s_WindowStateType.InvokeMember("get_activeAnimationClip", flags, null, animWindowState,
+                null);
     }
 
-    static void GetBindingInfo()
+    public static RootMotionCurves GetRootMotionCurves()
     {
-        Transform someHierarchyTransform = s_RootGameObject.transform;
-        
-        Animator animator = someHierarchyTransform.GetComponentInChildren<Animator>();
-        if (animator == null)
-            animator = someHierarchyTransform.GetComponent<Animator>();
-        if (animator == null)
-            animator = someHierarchyTransform.GetComponentInParent<Animator>();
-        
-        CentredSkinnedMesh centredSkinnedMesh = someHierarchyTransform.GetComponentInChildren<CentredSkinnedMesh>();
-        if (centredSkinnedMesh == null)
-            centredSkinnedMesh = someHierarchyTransform.GetComponent<CentredSkinnedMesh>();
-        if (centredSkinnedMesh == null)
-            centredSkinnedMesh = someHierarchyTransform.GetComponentInParent<CentredSkinnedMesh>();
-        
-        string path = AnimationUtility.CalculateTransformPath(centredSkinnedMesh.transform, animator.transform);
-        
-        // TODO: check the inPropertyName parameter for these.
-        s_ComXBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.x");
-        s_ComYBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.y");
-        s_ComZBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.z");
-    }
+        GetClip();
 
-    static void GetCurrentClipInfo()
-    {
-        if(s_AnimWindowState == null)
-            GetWindowInfo();
-        
-        if(s_ComZBinding.type == null)
-            GetBindingInfo();
-
-        AnimationClip clip = (AnimationClip)s_WindowStateType.InvokeMember("get_activeAnimationClip", BindingFlags.InvokeMethod | BindingFlags.Public, null, s_AnimWindowStateField.GetValue(s_AnimEditor), null);
-
-        if(s_AnimationClip == clip)
-            return;
-
-        s_AnimationClip = clip;
-        
-        if (s_AnimationClip == null)
+        return new RootMotionCurves
         {
-            Debug.Log("The current clip could not be found.");
-            return;
-        }
-
-        AnimationCurve curve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_ComXBinding);
-
-        if (curve == null)
-        {
-            Debug.Log("Couldn't find COM x curve on clip.");
-            return;
-        }
-        
-        s_XKeyframes = curve.keys;
-
-        curve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_ComYBinding);
-
-        if (curve == null)
-        {
-            Debug.Log("Couldn't find COM y curve on clip.");
-            return;
-        }
-        
-        s_YKeyframes = curve.keys;
-
-        curve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_ComZBinding);
-
-        if (curve == null)
-        {
-            Debug.Log("Couldn't find COM z curve on clip.");
-            return;
-        }
-        
-        s_ZKeyframes = curve.keys;
-    }
-
-    static void GetCurrentTime()
-    {
-        if(s_AnimWindowState == null)
-            GetWindowInfo();
-        
-        s_CurrentTime = (float)s_CurrentTimeProp.GetValue(s_AnimWindowState);
-    }
-
-    static bool GetPreviousKeyframes(out Keyframe xPrevious, out Keyframe yPrevious, out Keyframe zPrevious)
-    {
-        xPrevious = new Keyframe();
-        yPrevious = new Keyframe();
-        zPrevious = new Keyframe();
-
-        GetCurrentTime();
-        
-        if (s_XKeyframes.Length < 2 || s_YKeyframes.Length < 2 || s_ZKeyframes.Length < 2)
-            return false;
-
-        bool foundXKey = false;
-        for (int i = 1; i < s_XKeyframes.Length; i++)
-        {
-            Keyframe keyFrame = s_XKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                xPrevious = s_XKeyframes[i - 1];
-                foundXKey = true;
-            }
-        }
-
-        bool foundYKey = false;
-        for (int i = 1; i < s_YKeyframes.Length; i++)
-        {
-            Keyframe keyFrame = s_YKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                yPrevious = s_YKeyframes[i - 1];
-                foundYKey = true;
-            }
-        }
-
-        bool foundZKey = false;
-        for (int i = 1; i < s_ZKeyframes.Length; i++)
-        {
-            Keyframe keyFrame = s_ZKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                zPrevious = s_ZKeyframes[i - 1];
-                foundZKey = true;
-            }
-        }
-
-        return foundXKey && foundYKey && foundZKey;
-    }
-
-    static bool GetCurrentKeyframes(out Keyframe xCurrent, out Keyframe yCurrent, out Keyframe zCurrent)
-    {
-        xCurrent = new Keyframe();
-        yCurrent = new Keyframe();
-        zCurrent = new Keyframe();
-
-        GetCurrentTime();
-        
-        bool foundXKey = false;
-        for (int i = 0; i < s_XKeyframes.Length; i++)
-        {
-            Keyframe keyFrame = s_XKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                xCurrent = s_XKeyframes[i];
-                foundXKey = true;
-            }
-        }
-
-        bool foundYKey = false;
-        for (int i = 0; i < s_YKeyframes.Length; i++)
-        {
-            Keyframe keyFrame = s_YKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                yCurrent = s_YKeyframes[i];
-                foundYKey = true;
-            }
-        }
-
-        bool foundZKey = false;
-        for (int i = 0; i < s_ZKeyframes.Length; i++)
-        {
-            Keyframe keyFrame = s_ZKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                zCurrent = s_ZKeyframes[i];
-                foundZKey = true;
-            }
-        }
-
-        return foundXKey && foundYKey && foundZKey;
-    }
-
-    static bool GetNextKeyframes(out Keyframe xNext, out Keyframe yNext, out Keyframe zNext)
-    {
-        xNext = new Keyframe();
-        yNext = new Keyframe();
-        zNext = new Keyframe();
-
-        GetCurrentTime();
-        
-        if (s_XKeyframes.Length < 2 || s_YKeyframes.Length < 2 || s_ZKeyframes.Length < 2)
-            return false;
-
-        bool foundXKey = false;
-        for (int i = 0; i < s_XKeyframes.Length -1; i++)
-        {
-            Keyframe keyFrame = s_XKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                xNext = s_XKeyframes[i + 1];
-                foundXKey = true;
-            }
-        }
-
-        bool foundYKey = false;
-        for (int i = 0; i < s_YKeyframes.Length - 1; i++)
-        {
-            Keyframe keyFrame = s_YKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                yNext = s_YKeyframes[i + 1];
-                foundYKey = true;
-            }
-        }
-
-        bool foundZKey = false;
-        for (int i = 0; i < s_ZKeyframes.Length - 1; i++)
-        {
-            Keyframe keyFrame = s_ZKeyframes[i];
-
-            if (Mathf.Approximately(keyFrame.time, s_CurrentTime))
-            {
-                zNext = s_ZKeyframes[i + 1];
-                foundZKey = true;
-            }
-        }
-
-        return foundXKey && foundYKey && foundZKey;
-    }
-
-    public static Vector3ClipTimeInfo GetVector3ClipTimeInfo()
-    {
-        GetCurrentClipInfo();
-        
-        Vector3ClipTimeInfo clipTimeInfo = new Vector3ClipTimeInfo();
-
-        GetPreviousKeyframes(out clipTimeInfo.previousX, out clipTimeInfo.previousY, out clipTimeInfo.previousZ);
-        GetCurrentKeyframes(out clipTimeInfo.currentX, out clipTimeInfo.currentY, out clipTimeInfo.currentZ);
-        GetNextKeyframes(out clipTimeInfo.nextX, out clipTimeInfo.nextY, out clipTimeInfo.nextZ);
-
-        return clipTimeInfo;
+            rootTXCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootTXCurveBinding),
+            rootTYCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootTYCurveBinding),
+            rootTZCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootTZCurveBinding),
+            rootQXCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootQXCurveBinding),
+            rootQYCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootQYCurveBinding),
+            rootQZCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootQZCurveBinding),
+            rootQWCurve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_RootQWCurveBinding)
+        };
     }
 }

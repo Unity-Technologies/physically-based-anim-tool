@@ -54,6 +54,7 @@ public class CentredSkinnedMesh : MonoBehaviour
     BoneMass[] m_BoneMasses;
     [SerializeField]
     centerOfMass com = new centerOfMass();
+    public centerOfMass COM => com;
 
     [SerializeField]
     GameObject m_SkeletonRoot;
