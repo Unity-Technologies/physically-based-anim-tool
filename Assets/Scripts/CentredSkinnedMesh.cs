@@ -6,7 +6,7 @@ using UnityEngine;
 public class CentredSkinnedMesh : MonoBehaviour
 {
     [Serializable]
-    public struct centerOfMass
+    public struct CenterOfMass
     {
         public Vector3 pos;
         public Vector3 velocity;
@@ -53,8 +53,8 @@ public class CentredSkinnedMesh : MonoBehaviour
     [SerializeField]
     BoneMass[] m_BoneMasses;
     [SerializeField]
-    centerOfMass com = new centerOfMass();
-    public centerOfMass COM => com;
+    CenterOfMass com = new CenterOfMass();
+    public CenterOfMass COM => com;
 
     [SerializeField]
     GameObject m_SkeletonRoot;
