@@ -15,7 +15,6 @@ public static class AnimationWindowInfo
     static object s_AnimationWindow;
     static object s_AnimEditor;
     static object s_AnimWindowState;
-    static AnimationClip s_Clip;
     static float s_CurrentTime;
     static EditorCurveBinding s_ComXBinding;
     static EditorCurveBinding s_ComYBinding;
@@ -24,6 +23,19 @@ public static class AnimationWindowInfo
     static Keyframe[] s_XKeyframes;
     static Keyframe[] s_YKeyframes;
     static Keyframe[] s_ZKeyframes;
+    static AnimationClip s_AnimationClip;
+    static PropertyInfo s_RootGameObjectProp;
+
+    static AnimationWindowInfo()
+    {
+        GetTypeInfo();
+        //EditorApplication.update += CheckInfoUpdate;
+    }
+
+    static void CheckInfoUpdate ()
+    {
+        
+    }
 
     /*static UnityEngine.Object GetOpenAnimationWindow()
     {
@@ -53,6 +65,12 @@ public static class AnimationWindowInfo
         
         Type animEditorType = animEditorField.FieldType;
         FieldInfo clipPopupField = animEditorType.GetField("m_ClipPopup", flags);
+
+        PropertyInfo animationWindowSelectionItemProp = animEditorType.GetProperty("selection", flags);
+        Type animationWindowSelectionItemType = animationWindowSelectionItemProp.PropertyType;
+
+        PropertyInfo rootGameObjectProp = animationWindowSelectionItemType.GetProperty("rootGameObject", flags);
+        
         Type clipPopupType = clipPopupField.FieldType;
 
         MethodInfo getOrderedClipsMethod = clipPopupType.GetMethod("GetOrderedClipList", flags);
@@ -69,10 +87,10 @@ public static class AnimationWindowInfo
         
         //Debug.Log(currentTime);
 
-        PrintInfoAboutType(clipPopupField.FieldType);
+        PrintInfoAboutType(animationWindowSelectionItemProp.PropertyType);
     }
 
-    public static void PrintInfoAboutType(Type type)
+    static void PrintInfoAboutType(Type type)
     {
         BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 
@@ -111,17 +129,25 @@ public static class AnimationWindowInfo
         s_AnimWindowStateField = s_AnimEditorType.GetField("m_State", flags);
         s_WindowStateType = s_AnimWindowStateField.FieldType;
         s_CurrentTimeProp = s_WindowStateType.GetProperty("currentTime", flags);
+        
+        PropertyInfo animationWindowSelectionItemProp = s_AnimEditorType.GetProperty("selection", flags);
+        Type animationWindowSelectionItemType = animationWindowSelectionItemProp.PropertyType;
+        s_RootGameObjectProp = animationWindowSelectionItemType.GetProperty("rootGameObject", flags);
+        
+        Debug.Log("got type info");
     }
 
     static void GetBindingInfo()
     {
         // TODO: someHierarchyTransform cannot be set from selection.
         Transform someHierarchyTransform = Selection.activeTransform;
+        
         Animator animator = someHierarchyTransform.GetComponentInChildren<Animator>();
         if (animator == null)
             animator = someHierarchyTransform.GetComponent<Animator>();
         if (animator == null)
             animator = someHierarchyTransform.GetComponentInParent<Animator>();
+        
         CentredSkinnedMesh centredSkinnedMesh = someHierarchyTransform.GetComponentInChildren<CentredSkinnedMesh>();
         if (centredSkinnedMesh == null)
             centredSkinnedMesh = someHierarchyTransform.GetComponent<CentredSkinnedMesh>();
@@ -166,7 +192,6 @@ public static class AnimationWindowInfo
         }
     }
 
-    // TODO: this needs to be called when clip changes.  cannot be lazy!
     static void GetCurrentClipInfo()
     {
         if(s_AnimWindowState == null)
@@ -177,13 +202,18 @@ public static class AnimationWindowInfo
 
         AnimationClip clip = (AnimationClip)s_WindowStateType.InvokeMember("get_activeAnimationClip", BindingFlags.InvokeMethod | BindingFlags.Public, null, s_AnimWindowStateField.GetValue(s_AnimEditor), null);
 
-        if (clip == null)
+        if(s_AnimationClip == clip)
+            return;
+
+        s_AnimationClip = clip;
+        
+        if (s_AnimationClip == null)
         {
             Debug.Log("The current clip could not be found.");
             return;
         }
 
-        AnimationCurve curve = AnimationUtility.GetEditorCurve(clip, s_ComXBinding);
+        AnimationCurve curve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_ComXBinding);
 
         if (curve == null)
         {
@@ -193,7 +223,7 @@ public static class AnimationWindowInfo
         
         s_XKeyframes = curve.keys;
 
-        curve = AnimationUtility.GetEditorCurve(clip, s_ComYBinding);
+        curve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_ComYBinding);
 
         if (curve == null)
         {
@@ -203,7 +233,7 @@ public static class AnimationWindowInfo
         
         s_YKeyframes = curve.keys;
 
-        curve = AnimationUtility.GetEditorCurve(clip, s_ComZBinding);
+        curve = AnimationUtility.GetEditorCurve(s_AnimationClip, s_ComZBinding);
 
         if (curve == null)
         {
@@ -222,11 +252,8 @@ public static class AnimationWindowInfo
         s_CurrentTime = (float)s_CurrentTimeProp.GetValue(s_AnimWindowState);
     }
 
-    public static bool GetPreviousKeyframes(out Keyframe xPrevious, out Keyframe yPrevious, out Keyframe zPrevious)
+    static bool GetPreviousKeyframes(out Keyframe xPrevious, out Keyframe yPrevious, out Keyframe zPrevious)
     {
-        if(s_ZKeyframes == null)
-            GetCurrentClipInfo();
-
         xPrevious = new Keyframe();
         yPrevious = new Keyframe();
         zPrevious = new Keyframe();
@@ -275,11 +302,8 @@ public static class AnimationWindowInfo
         return foundXKey && foundYKey && foundZKey;
     }
 
-    public static bool GetCurrentKeyframes(out Keyframe xCurrent, out Keyframe yCurrent, out Keyframe zCurrent)
+    static bool GetCurrentKeyframes(out Keyframe xCurrent, out Keyframe yCurrent, out Keyframe zCurrent)
     {
-        if(s_ZKeyframes == null)
-            GetCurrentClipInfo();
-
         xCurrent = new Keyframe();
         yCurrent = new Keyframe();
         zCurrent = new Keyframe();
@@ -325,11 +349,8 @@ public static class AnimationWindowInfo
         return foundXKey && foundYKey && foundZKey;
     }
 
-    public static bool GetNextKeyframes(out Keyframe xNext, out Keyframe yNext, out Keyframe zNext)
+    static bool GetNextKeyframes(out Keyframe xNext, out Keyframe yNext, out Keyframe zNext)
     {
-        if(s_ZKeyframes == null)
-            GetCurrentClipInfo();
-
         xNext = new Keyframe();
         yNext = new Keyframe();
         zNext = new Keyframe();
@@ -376,5 +397,18 @@ public static class AnimationWindowInfo
         }
 
         return foundXKey && foundYKey && foundZKey;
+    }
+
+    public static Vector3ClipTimeInfo GetVector3ClipTimeInfo()
+    {
+        GetCurrentClipInfo();
+        
+        Vector3ClipTimeInfo clipTimeInfo = new Vector3ClipTimeInfo();
+
+        GetPreviousKeyframes(out clipTimeInfo.previousX, out clipTimeInfo.previousY, out clipTimeInfo.previousZ);
+        GetCurrentKeyframes(out clipTimeInfo.currentX, out clipTimeInfo.currentY, out clipTimeInfo.currentZ);
+        GetNextKeyframes(out clipTimeInfo.nextX, out clipTimeInfo.nextY, out clipTimeInfo.nextZ);
+
+        return clipTimeInfo;
     }
 }
