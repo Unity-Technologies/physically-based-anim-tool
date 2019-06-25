@@ -5,10 +5,6 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class CentredSkinnedMesh : MonoBehaviour
 {
-    public CentredSkinnedMesh()
-    {
-        EditorApplication.update += Update;
-    }
     [Serializable]
     public struct centerOfMass
     {
@@ -27,8 +23,6 @@ public class CentredSkinnedMesh : MonoBehaviour
         }
 
     }
-
-    public GameObject animatorGO;
 
     [Serializable]
     public struct BoneMass
