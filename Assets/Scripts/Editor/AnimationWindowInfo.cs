@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 public static class AnimationWindowInfo
 {
     static Type s_AnimationWindowType;
-    static Type s_AnimEditorType;
+    //static Type s_AnimEditorType;
     static Type s_WindowStateType;
     static FieldInfo s_AnimWindowStateField;
     static PropertyInfo s_CurrentTimeProp;
@@ -25,6 +25,8 @@ public static class AnimationWindowInfo
     static Keyframe[] s_ZKeyframes;
     static AnimationClip s_AnimationClip;
     static PropertyInfo s_RootGameObjectProp;
+    static PropertyInfo s_AnimationWindowSelectionItemProp;
+    static GameObject s_RootGameObject;
 
     static AnimationWindowInfo()
     {
@@ -125,41 +127,16 @@ public static class AnimationWindowInfo
         s_AnimationWindowType = System.Type.GetType("UnityEditor.AnimationWindow,UnityEditor");
         s_AnimEditorField = s_AnimationWindowType.GetField("m_AnimEditor", flags);
  
-        s_AnimEditorType = s_AnimEditorField.FieldType;
-        s_AnimWindowStateField = s_AnimEditorType.GetField("m_State", flags);
+        Type animEditorType = s_AnimEditorField.FieldType;
+        s_AnimWindowStateField = animEditorType.GetField("m_State", flags);
         s_WindowStateType = s_AnimWindowStateField.FieldType;
         s_CurrentTimeProp = s_WindowStateType.GetProperty("currentTime", flags);
         
-        PropertyInfo animationWindowSelectionItemProp = s_AnimEditorType.GetProperty("selection", flags);
-        Type animationWindowSelectionItemType = animationWindowSelectionItemProp.PropertyType;
+        s_AnimationWindowSelectionItemProp = animEditorType.GetProperty("selection", flags);
+        Type animationWindowSelectionItemType = s_AnimationWindowSelectionItemProp.PropertyType;
         s_RootGameObjectProp = animationWindowSelectionItemType.GetProperty("rootGameObject", flags);
         
         Debug.Log("got type info");
-    }
-
-    static void GetBindingInfo()
-    {
-        // TODO: someHierarchyTransform cannot be set from selection.
-        Transform someHierarchyTransform = Selection.activeTransform;
-        
-        Animator animator = someHierarchyTransform.GetComponentInChildren<Animator>();
-        if (animator == null)
-            animator = someHierarchyTransform.GetComponent<Animator>();
-        if (animator == null)
-            animator = someHierarchyTransform.GetComponentInParent<Animator>();
-        
-        CentredSkinnedMesh centredSkinnedMesh = someHierarchyTransform.GetComponentInChildren<CentredSkinnedMesh>();
-        if (centredSkinnedMesh == null)
-            centredSkinnedMesh = someHierarchyTransform.GetComponent<CentredSkinnedMesh>();
-        if (centredSkinnedMesh == null)
-            centredSkinnedMesh = someHierarchyTransform.GetComponentInParent<CentredSkinnedMesh>();
-        
-        string path = AnimationUtility.CalculateTransformPath(centredSkinnedMesh.transform, animator.transform);
-        
-        // TODO: check the inPropertyName parameter for these.
-        s_ComXBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.x");
-        s_ComYBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.y");
-        s_ComZBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.z");
     }
 
     static void GetWindowInfo()
@@ -190,6 +167,34 @@ public static class AnimationWindowInfo
         {
             Debug.Log("No animation window state found in animation editor.");
         }
+
+        object animationWindowSelectionItem = s_AnimationWindowSelectionItemProp.GetValue(s_AnimEditor);
+
+        s_RootGameObject = (GameObject)s_RootGameObjectProp.GetValue(animationWindowSelectionItem);
+    }
+
+    static void GetBindingInfo()
+    {
+        Transform someHierarchyTransform = s_RootGameObject.transform;
+        
+        Animator animator = someHierarchyTransform.GetComponentInChildren<Animator>();
+        if (animator == null)
+            animator = someHierarchyTransform.GetComponent<Animator>();
+        if (animator == null)
+            animator = someHierarchyTransform.GetComponentInParent<Animator>();
+        
+        CentredSkinnedMesh centredSkinnedMesh = someHierarchyTransform.GetComponentInChildren<CentredSkinnedMesh>();
+        if (centredSkinnedMesh == null)
+            centredSkinnedMesh = someHierarchyTransform.GetComponent<CentredSkinnedMesh>();
+        if (centredSkinnedMesh == null)
+            centredSkinnedMesh = someHierarchyTransform.GetComponentInParent<CentredSkinnedMesh>();
+        
+        string path = AnimationUtility.CalculateTransformPath(centredSkinnedMesh.transform, animator.transform);
+        
+        // TODO: check the inPropertyName parameter for these.
+        s_ComXBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.x");
+        s_ComYBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.y");
+        s_ComZBinding = EditorCurveBinding.FloatCurve(path, typeof(CentredSkinnedMesh), "com.position.z");
     }
 
     static void GetCurrentClipInfo()
