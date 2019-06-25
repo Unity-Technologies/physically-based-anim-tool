@@ -9,22 +9,29 @@ public class CentredSkinnedMeshEditor : Editor
 {
     SerializedProperty m_CentreOfMassProp;
     SerializedProperty m_BoneMassesProp;
-
+    SerializedProperty m_animatorGO;
+    
     static readonly GUILayoutOption k_BoneWidth = GUILayout.Width (150f);
     static readonly GUILayoutOption k_SliderWidth = GUILayout.Width (150f);
     static readonly GUILayoutOption k_RelativeMassWidth = GUILayout.Width (80f);
     static readonly GUILayoutOption k_CalculatedMassWidth = GUILayout.Width (80f);
 
+    private Vector3 previousComPos;
+
     void OnEnable ()
     {
         m_CentreOfMassProp = serializedObject.FindProperty("m_CentreOfMass");
         m_BoneMassesProp = serializedObject.FindProperty ("m_BoneMasses");
+        m_animatorGO = serializedObject.FindProperty("animatorGO");
+        previousComPos = m_CentreOfMassProp.vector3Value;
     }
 
     public override void OnInspectorGUI ()
     {
         serializedObject.Update ();
-        
+
+        EditorGUILayout.PropertyField(m_animatorGO);
+
         EditorGUILayout.BeginHorizontal ();
             
         EditorGUILayout.LabelField ("Bone", k_BoneWidth);
@@ -60,14 +67,21 @@ public class CentredSkinnedMeshEditor : Editor
         float size = HandleUtility.GetHandleSize(m_CentreOfMassProp.vector3Value) * 0.5f;
         Vector3 snap = Vector3.one * 0.01f;
 
+        CentredSkinnedMesh go = m_animatorGO.serializedObject.targetObject as CentredSkinnedMesh;
+
         EditorGUI.BeginChangeCheck();
         Vector3 newTargetPosition = Handles.PositionHandle(m_CentreOfMassProp.vector3Value, Quaternion.identity);
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(target, "Change Centre Of Mass Position");
-            
-            // TODO: put root movement code here.
-            Debug.Log("moving");
+            if(m_animatorGO != null)
+            {
+                if(go != null)
+                {
+                    go.transform.position += (newTargetPosition - previousComPos);
+                }
+            }
         }
+        previousComPos = newTargetPosition;
     }
 }
