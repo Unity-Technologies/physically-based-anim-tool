@@ -22,6 +22,13 @@ public class Curve3Editor : Editor
         {
             CalculateCOMs();
         }
+
+        if (GUILayout.Button("Wipe Points"))
+        {
+            Curve3 c3 = target as Curve3;
+            c3.m_positions.Clear();
+            c3.m_orientations.Clear();
+        }
     }
 
     void CalculateCOMs()
@@ -43,15 +50,31 @@ public class Curve3Editor : Editor
         EditorGUI.BeginChangeCheck();
         Curve3 c3 = target as Curve3;
 
-        for(int i = 0; i < c3.m_positions.Count; i++)
+        for (int i = 0; i < c3.m_positions.Count; i++)
         {
-            Vector3 newPos = Handles.PositionHandle(c3.m_positions[i], c3.m_orientations[i]);
-            c3.m_positions[i] = newPos;
+            if (Tools.current == Tool.Rotate)
+            {
+                Quaternion newRot = Handles.RotationHandle(c3.m_orientations[i], c3.m_positions[i]);
+                c3.m_orientations[i] = newRot;
+            }
+            else
+            {
+                Vector3 newPos = Handles.PositionHandle(c3.m_positions[i], c3.m_orientations[i]);
+                c3.m_positions[i] = newPos;
+            }
         }
 
-        for(int i = 0; i < c3.m_positions.Count - 1; i++)
         {
-            Handles.DrawLine(c3.m_positions[i], c3.m_positions[i + 1]);
+            float tIncrement = 0.05f;
+            for (float t = 0.0f; t + tIncrement <= 1.0f; t += tIncrement)
+            {
+                var curPos = c3.EvaluatePoint(t);
+                var nextPos = c3.EvaluatePoint(t + tIncrement);
+                Handles.DrawLine(curPos, nextPos);
+                
+            }
+
+            //Handles.DrawLine(c3.EvaluatePoint(0), c3.EvaluatePoint(1));
         }
 
         EditorGUI.EndChangeCheck();

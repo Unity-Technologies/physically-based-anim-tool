@@ -6,6 +6,7 @@ public class Curve3Driver : MonoBehaviour
 {
     public Curve3 m_sourceCurve;
     float m_localTime;
+    public float m_timeScale = 1.0f;
 
     void Start()
     {
@@ -22,10 +23,7 @@ public class Curve3Driver : MonoBehaviour
         var csm = GetComponent<CentredSkinnedMesh>();
         if (csm == null) return;
 
-        int idx0 = System.Math.Min(idx, m_sourceCurve.m_positions.Count - 1);
-        int idx1 = System.Math.Min(idx + 1, m_sourceCurve.m_positions.Count - 1);
- 
-        Vector3 desiredCom = Vector3.Lerp(m_sourceCurve.m_positions[idx0], m_sourceCurve.m_positions[idx1], t);
+        Vector3 desiredCom = m_sourceCurve.EvaluatePoint(m_localTime);
         Quaternion desiredOrientation = Quaternion.identity;
         Matrix4x4 worldFromDesired = Matrix4x4.TRS(desiredCom, desiredOrientation, new Vector3(1, 1, 1));
 
@@ -34,7 +32,7 @@ public class Curve3Driver : MonoBehaviour
 
         updateTransform(transform, transform.localToWorldMatrix * worldFromCurrent.inverse * worldFromDesired);
         
-        m_localTime += Time.deltaTime;
+        m_localTime += Time.deltaTime * m_timeScale;
     }
 
     void updateTransform(Transform t, Matrix4x4 m)
