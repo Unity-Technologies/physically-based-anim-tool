@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class TransformCurves
 {
+    public readonly Transform transform;
+
     readonly AnimationCurve m_PosX;
     readonly AnimationCurve m_PosY;
     readonly AnimationCurve m_PosZ;
@@ -14,8 +16,6 @@ public class TransformCurves
     readonly AnimationCurve m_SclY;
     readonly AnimationCurve m_SclZ;
 
-    readonly Transform m_Transform;
-
     readonly string m_TransformPath;
 
     readonly TransformCurves m_Parent;
@@ -26,7 +26,7 @@ public class TransformCurves
 
     public TransformCurves(TransformCurves parent, Transform transform, AnimationClip clip)
     {
-        m_Transform = transform;
+        this.transform = transform;
         
         m_Parent = parent;
 

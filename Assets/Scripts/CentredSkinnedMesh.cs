@@ -68,6 +68,32 @@ public class CentredSkinnedMesh : MonoBehaviour
         return com.pos;
     }
 
+    public Vector3 CalculateCentreOfMass(TransformCurves[] hierarchyCurves, float time)
+    {
+        Vector3 com = Vector3.zero;
+        float summedWeight = 0f;
+        
+        for (int i = 0; i < hierarchyCurves.Length; i++)
+        {
+            TransformCurves transformCurves = hierarchyCurves[i];
+            
+            for (int j = 0; j < m_BoneMasses.Length; j++)
+            {
+                BoneMass boneMass = m_BoneMasses[j];
+
+                if (transformCurves.transform == boneMass.bone)
+                {
+                    com += boneMass.relativeDensity * boneMass.mass * transformCurves.GetPosition(time);
+                    summedWeight += boneMass.relativeDensity * boneMass.mass;
+                }
+            }
+        }
+
+        com /= summedWeight;
+
+        return com;
+    }
+
     void Update()
     {
         m_CentreOfMass = CalculateCentreOfMass();
