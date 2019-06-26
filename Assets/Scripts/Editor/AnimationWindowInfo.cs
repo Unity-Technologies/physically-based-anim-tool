@@ -173,6 +173,12 @@ public static class AnimationWindowInfo
 
     public static void WriteRootMotionCurves(RootMotionCurves rootMotionCurves)
     {
-        // TODO: complete this.
+        AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootTXCurveBinding, rootMotionCurves.rootTXCurve);
+        AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootTYCurveBinding, rootMotionCurves.rootTYCurve);
+        AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootTZCurveBinding, rootMotionCurves.rootTZCurve);
+        AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootQXCurveBinding, rootMotionCurves.rootQXCurve);
+        AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootQYCurveBinding, rootMotionCurves.rootQYCurve);
+        AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootQZCurveBinding, rootMotionCurves.rootQZCurve);
+        AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootQWCurveBinding, rootMotionCurves.rootQWCurve);
     }
 }
