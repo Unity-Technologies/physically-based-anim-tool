@@ -52,6 +52,7 @@ public class Curve3Editor : Editor
             c3.m_positions.Add(com);
             c3.m_orientations.Add(Quaternion.identity);
         }
+        DestroyImmediate(selfCopy);
     }
 
     void OnSceneGUI()

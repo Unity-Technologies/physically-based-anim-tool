@@ -149,7 +149,8 @@ public static class AnimationWindowInfo
             Debug.Log("No animation editor found in animation window.");
 
         object animWindowState = s_AnimWindowStateField.GetValue(animEditor);
-        return s_WindowStateType.GetProperty("activeAnimationClip").GetValue(animWindowState, null) as AnimationClip;
+        s_AnimationClip = s_WindowStateType.GetProperty("activeAnimationClip").GetValue(animWindowState, null) as AnimationClip;
+        return s_AnimationClip;
     }
 
     public static RootMotionCurves GetRootMotionCurves()
