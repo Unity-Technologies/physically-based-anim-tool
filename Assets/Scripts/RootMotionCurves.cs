@@ -154,6 +154,11 @@ public struct RootMotionCurves
         keyTimes.Sort();
     }
 
+    public Vector3 GetPosition(float time)
+    {
+        return Vector3.zero;    // TODO: complete me.
+    }
+
     Vector3 GetVector3(float time)
     {
         return new Vector3(rootTXCurve.Evaluate(time), rootTYCurve.Evaluate(time), rootTZCurve.Evaluate(time));
