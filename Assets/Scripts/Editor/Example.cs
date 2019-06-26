@@ -38,11 +38,14 @@ public class Example
         {
             float time = 0f;
             Vector3 comAtTime = centredSkinnedMesh.CalculateCentreOfMass(hierarchyCurves, time);
-            Vector3 rootAtTime = authoredCurves.GetPosition(time);
+            Vector3 rootAtTime = authoredCurves.GetRootPosition(time);
             Vector3 deltaAtTime = comAtTime - rootAtTime;
         }
         
-        RootMotionCurves centreOfMassCurves = new RootMotionCurves();    // TODO: make this using the above.
+        Vector3[] deltas = new Vector3[0];
+        float[] times = new float[0];
+
+        RootMotionCurves centreOfMassCurves = RootMotionCurves.GetCOMCurves(deltas, times, authoredCurves);    // DONE
 
         float takeOffTime = 0.1f;
         float landTime = 0.9f;

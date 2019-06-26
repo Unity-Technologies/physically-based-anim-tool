@@ -154,9 +154,18 @@ public struct RootMotionCurves
         keyTimes.Sort();
     }
 
-    public Vector3 GetPosition(float time)
+    public Vector3 GetRootPosition (float time)
     {
-        return Vector3.zero;    // TODO: complete me.
+        Vector3 startTranslation = GetVector3 (0f);
+        Quaternion startRotation = GetQuaternion (0f);
+            
+        Vector3 currentTranslation = GetVector3 (time);
+        Quaternion currentRotation = GetQuaternion (time);
+            
+        Vector3 translationDelta = currentTranslation - startTranslation;
+        Quaternion rotationDelta = currentRotation * Quaternion.Inverse (startRotation);
+
+        return rotationDelta * translationDelta;
     }
 
     Vector3 GetVector3(float time)
@@ -176,6 +185,31 @@ public struct RootMotionCurves
 
     static float GetVerticalTrajectory(float time, float duration, float gravity)
     {
-        return -0.5f * gravity * time * time + 0.5f * gravity * duration * time;
+        return 0.5f * gravity * time * time - 0.5f * gravity * duration * time;
+    }
+
+    public static RootMotionCurves GetCOMCurves(Vector3[] deltas, float[] times, RootMotionCurves rootMotionCurves)
+    {
+        RootMotionCurves comCurves = rootMotionCurves;
+        
+        AnimationCurve x = new AnimationCurve();
+        AnimationCurve y = new AnimationCurve();
+        AnimationCurve z = new AnimationCurve();
+        
+        for (int i = 0; i < deltas.Length; i++)
+        {
+            Vector3 delta = deltas[i];
+            float time = times[i];
+
+            x.AddKey(time, (delta + rootMotionCurves.GetRootPosition(time)).x);
+            y.AddKey(time, (delta + rootMotionCurves.GetRootPosition(time)).y);
+            z.AddKey(time, (delta + rootMotionCurves.GetRootPosition(time)).z);
+        }
+
+        comCurves.rootTXCurve = x;
+        comCurves.rootTYCurve = y;
+        comCurves.rootTZCurve = z;
+
+        return comCurves;
     }
 }
