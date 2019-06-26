@@ -14,6 +14,8 @@ public class TransformCurves
     readonly AnimationCurve m_SclY;
     readonly AnimationCurve m_SclZ;
 
+    readonly Transform m_Transform;
+
     readonly string m_TransformPath;
 
     readonly TransformCurves m_Parent;
@@ -24,6 +26,8 @@ public class TransformCurves
 
     public TransformCurves(TransformCurves parent, Transform transform, AnimationClip clip)
     {
+        m_Transform = transform;
+        
         m_Parent = parent;
 
         m_DefaultPos = transform.localPosition;
@@ -86,5 +90,20 @@ public class TransformCurves
         }
 
         return globalTRS.GetColumn (3);
+    }
+
+    public static TransformCurves[] GetTransformCurvesHierarchy(Animator animator, AnimationClip clip)
+    {
+        TransformCurves[] allCurves = new TransformCurves[animator.transform.hierarchyCount - 1];
+        Transform currentTransform = animator.transform;
+        TransformCurves currentCurves = null;
+
+        for (int i = 0; i < allCurves.Length; i++)
+        {
+            allCurves[i] = new TransformCurves(currentCurves, currentTransform, clip);
+            currentTransform.GetNext();
+        }
+
+        return allCurves;
     }
 }
