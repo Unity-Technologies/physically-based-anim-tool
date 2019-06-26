@@ -200,9 +200,11 @@ public struct RootMotionCurves
             Vector3 delta = deltas[i];
             float time = times[i];
 
-            x.AddKey(time, (delta + rootMotionCurves.GetRootPosition(time)).x);
-            y.AddKey(time, (delta + rootMotionCurves.GetRootPosition(time)).y);
-            z.AddKey(time, (delta + rootMotionCurves.GetRootPosition(time)).z);
+            Vector3 com = delta + rootMotionCurves.GetRootPosition(time);
+
+            x.AddKey(time, com.x);
+            y.AddKey(time, com.y);
+            z.AddKey(time, com.z);
         }
 
         comCurves.rootTXCurve = x;
@@ -214,7 +216,28 @@ public struct RootMotionCurves
 
     public static RootMotionCurves GetRootCurvesFromCOMCurves(Vector3[] deltas, float[] times, RootMotionCurves comCurves)
     {
-        // TODO: complete me
-        return comCurves;
+        RootMotionCurves rootCurves = comCurves;
+        
+        AnimationCurve x = new AnimationCurve();
+        AnimationCurve y = new AnimationCurve();
+        AnimationCurve z = new AnimationCurve();
+        
+        for (int i = 0; i < deltas.Length; i++)
+        {
+            Vector3 delta = deltas[i];
+            float time = times[i];
+
+            Vector3 root = comCurves.GetRootPosition(time) - delta;
+
+            x.AddKey(time, root.x);
+            y.AddKey(time, root.y);
+            z.AddKey(time, root.z);
+        }
+
+        rootCurves.rootTXCurve = x;
+        rootCurves.rootTYCurve = y;
+        rootCurves.rootTZCurve = z;
+        
+        return rootCurves;
     }
 }

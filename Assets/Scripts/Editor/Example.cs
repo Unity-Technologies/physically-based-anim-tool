@@ -53,7 +53,7 @@ public class Example
         RootMotionCurves physicallyAccurateCurves = centreOfMassCurves.GetTrajectoryCurves(takeOffTime, landTime);    // DONE
 
         RootMotionCurves adjustedCurves =
-            RootMotionCurves.GetRootCurvesFromCOMCurves(deltas, times, physicallyAccurateCurves);    // TODO
+            RootMotionCurves.GetRootCurvesFromCOMCurves(deltas, times, physicallyAccurateCurves);    // DONE
         
         AnimationWindowInfo.WriteRootMotionCurves(adjustedCurves);    // DONE
     }
