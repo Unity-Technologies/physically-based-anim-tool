@@ -37,7 +37,6 @@ public struct RootMotionCurves
             zKeys[i] = new Keyframe(time, GetLateralTrajectory(time, duration, delta.z) + takeOffPosition.z);
         }
         
-        
         AnimationCurve xCurve = new AnimationCurve(xKeys);
         AnimationCurve yCurve = new AnimationCurve(yKeys);
         AnimationCurve zCurve = new AnimationCurve(zKeys);
@@ -188,7 +187,7 @@ public struct RootMotionCurves
         return 0.5f * gravity * time * time - 0.5f * gravity * duration * time;
     }
 
-    public static RootMotionCurves GetCOMCurves(Vector3[] deltas, float[] times, RootMotionCurves rootMotionCurves)
+    public static RootMotionCurves GetCOMCurvesFromRootCurves(Vector3[] deltas, float[] times, RootMotionCurves rootMotionCurves)
     {
         RootMotionCurves comCurves = rootMotionCurves;
         
@@ -210,6 +209,12 @@ public struct RootMotionCurves
         comCurves.rootTYCurve = y;
         comCurves.rootTZCurve = z;
 
+        return comCurves;
+    }
+
+    public static RootMotionCurves GetRootCurvesFromCOMCurves(Vector3[] deltas, float[] times, RootMotionCurves comCurves)
+    {
+        // TODO: complete me
         return comCurves;
     }
 }

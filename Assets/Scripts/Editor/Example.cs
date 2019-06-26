@@ -34,24 +34,26 @@ public class Example
 
         RootMotionCurves authoredCurves = AnimationWindowInfo.GetRootMotionCurves();    // DONE
 
-        // TODO: figure out what to do with the below.
-        {
-            float time = 0f;
-            Vector3 comAtTime = centredSkinnedMesh.CalculateCentreOfMass(hierarchyCurves, time);
-            Vector3 rootAtTime = authoredCurves.GetRootPosition(time);
-            Vector3 deltaAtTime = comAtTime - rootAtTime;
-        }
-        
-        Vector3[] deltas = new Vector3[0];
+        int frameCount = 10;
+        float timePerFrame = clip.length / frameCount;
+        Vector3[] deltas = new Vector3[frameCount];
         float[] times = new float[0];
+        for (int i = 0; i < frameCount; i++)
+        {
+            times[i] = i * timePerFrame;
+            Vector3 comAtTime = centredSkinnedMesh.CalculateCentreOfMass(hierarchyCurves, times[i]);
+            Vector3 rootAtTime = authoredCurves.GetRootPosition(times[i]);
+            deltas[i] = comAtTime - rootAtTime;
+        }
 
-        RootMotionCurves centreOfMassCurves = RootMotionCurves.GetCOMCurves(deltas, times, authoredCurves);    // DONE
+        RootMotionCurves centreOfMassCurves = RootMotionCurves.GetCOMCurvesFromRootCurves(deltas, times, authoredCurves);    // DONE
 
         float takeOffTime = 0.1f;
         float landTime = 0.9f;
         RootMotionCurves physicallyAccurateCurves = centreOfMassCurves.GetTrajectoryCurves(takeOffTime, landTime);    // DONE
-        
-        RootMotionCurves adjustedCurves = new RootMotionCurves();    // TODO: make this using the inverse of the delta info.
+
+        RootMotionCurves adjustedCurves =
+            RootMotionCurves.GetRootCurvesFromCOMCurves(deltas, times, physicallyAccurateCurves);    // TODO
         
         AnimationWindowInfo.WriteRootMotionCurves(adjustedCurves);    // DONE
     }
