@@ -7,6 +7,8 @@ using UnityEditor.IMGUI.Controls;
 [CustomEditor(typeof(Curve3))]
 public class Curve3Editor : Editor
 {
+    int m_NumComSamples = 10;
+
     void Start() { }
 
     public override void OnInspectorGUI()
@@ -18,9 +20,10 @@ public class Curve3Editor : Editor
             c3.m_orientations.Add(Quaternion.identity);
         }
 
+        m_NumComSamples = EditorGUILayout.IntField("Num COM samples", m_NumComSamples);
         if (GUILayout.Button("Calculate COMs"))
         {
-            CalculateCOMs();
+            CalculateCOMs(m_NumComSamples);
         }
 
         if (GUILayout.Button("Wipe Points"))
@@ -31,7 +34,7 @@ public class Curve3Editor : Editor
         }
     }
 
-    void CalculateCOMs()
+    void CalculateCOMs(int numAnimSamples)
     {
         Curve3 c3 = target as Curve3;
 
@@ -40,8 +43,13 @@ public class Curve3Editor : Editor
 
         AnimationWindowInfo.GetTypeInfo();
         AnimationClip c = AnimationWindowInfo.GetClip();
+        if (c == null)
+        {
+            Debug.Log("Couldn't get clip. Not recalculating.");
+            return;
+        }
+
         GameObject selfCopy = Instantiate(c3.transform.gameObject, c3.transform.parent);
-        int numAnimSamples = 100;
         for (int i = 0; i < numAnimSamples; i++)
         {
             float animTime = i * c.length / numAnimSamples;
