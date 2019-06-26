@@ -38,9 +38,18 @@ public class Curve3Editor : Editor
         c3.m_positions.Clear();
         c3.m_orientations.Clear();
 
-        for(int i = 0; i < 10; i++)
+        AnimationWindowInfo.GetTypeInfo();
+        AnimationClip c = AnimationWindowInfo.GetClip();
+        GameObject selfCopy = Instantiate(c3.transform.gameObject, c3.transform.parent);
+        int numAnimSamples = 100;
+        for (int i = 0; i < numAnimSamples; i++)
         {
-            c3.m_positions.Add(new Vector3(0, 1.5f + 0.2f * Mathf.Sin((float)i * 5.0f), 0.5f * (float)i));
+            float animTime = i * c.length / numAnimSamples;
+            c.SampleAnimation(selfCopy, animTime);
+
+            var com = selfCopy.GetComponent<CentredSkinnedMesh>().CalculateCentreOfMass();
+
+            c3.m_positions.Add(com);
             c3.m_orientations.Add(Quaternion.identity);
         }
     }
@@ -74,7 +83,6 @@ public class Curve3Editor : Editor
                 
             }
 
-            //Handles.DrawLine(c3.EvaluatePoint(0), c3.EvaluatePoint(1));
         }
 
         EditorGUI.EndChangeCheck();

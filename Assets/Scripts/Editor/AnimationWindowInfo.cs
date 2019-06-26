@@ -119,7 +119,7 @@ public static class AnimationWindowInfo
         Debug.Log(log);
     }*/
 
-    static void GetTypeInfo()
+    public static void GetTypeInfo()
     {
         BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 
@@ -132,7 +132,7 @@ public static class AnimationWindowInfo
 
     }
 
-    static void GetClip()
+    public static AnimationClip GetClip()
     {
         if (s_WindowStateType == null)
             GetTypeInfo();
@@ -153,6 +153,7 @@ public static class AnimationWindowInfo
         s_AnimationClip =
             (AnimationClip) s_WindowStateType.InvokeMember("get_activeAnimationClip", flags, null, animWindowState,
                 null);
+        return s_AnimationClip;
     }
 
     public static RootMotionCurves GetRootMotionCurves()
