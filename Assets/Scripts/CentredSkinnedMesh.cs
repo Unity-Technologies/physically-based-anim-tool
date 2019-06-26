@@ -68,6 +68,11 @@ public class CentredSkinnedMesh : MonoBehaviour
         return com.pos;
     }
 
+    public TransformCurves[] GetTransformCurves(AnimationClip clip)
+    {
+        return TransformCurves.GetTransformCurvesHierarchy(GetComponent<Animator>(), clip);
+    }
+
     public Vector3 CalculateCentreOfMass(TransformCurves[] hierarchyCurves, float time)
     {
         Vector3 com = Vector3.zero;
