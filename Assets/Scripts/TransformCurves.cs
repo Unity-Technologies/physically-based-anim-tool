@@ -144,7 +144,7 @@ public class TransformCurves
         for (int i = 0; i < allCurves.Length; i++)
         {
             currentCurves = new TransformCurves(currentCurves, currentTransform, clip);
-            currentTransform.GetNext();
+            currentTransform = currentTransform.GetNext();
             allCurves[i] = currentCurves;
         }
 
