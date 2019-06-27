@@ -8,6 +8,7 @@ using UnityEditor.IMGUI.Controls;
 public class Curve3Editor : Editor
 {
     int m_NumComSamples = 10;
+    bool showGizmos = true;
 
     void Start() { }
 
@@ -21,6 +22,8 @@ public class Curve3Editor : Editor
         }
 
         m_NumComSamples = EditorGUILayout.IntField("Num COM samples", m_NumComSamples);
+        showGizmos = EditorGUILayout.Toggle("Show gizmos", showGizmos);
+
         if (GUILayout.Button("Calculate COMs"))
         {
             CalculateCOMs(m_NumComSamples);
@@ -70,15 +73,18 @@ public class Curve3Editor : Editor
 
         for (int i = 0; i < c3.m_positions.Count; i++)
         {
-            if (Tools.current == Tool.Rotate)
+            if (showGizmos)
             {
-                Quaternion newRot = Handles.RotationHandle(c3.m_orientations[i], c3.m_positions[i]);
-                c3.m_orientations[i] = newRot;
-            }
-            else
-            {
-                Vector3 newPos = Handles.PositionHandle(c3.m_positions[i], c3.m_orientations[i]);
-                c3.m_positions[i] = newPos;
+                if (Tools.current == Tool.Rotate)
+                {
+                    Quaternion newRot = Handles.RotationHandle(c3.m_orientations[i], c3.m_positions[i]);
+                    c3.m_orientations[i] = newRot;
+                }
+                else
+                {
+                    Vector3 newPos = Handles.PositionHandle(c3.m_positions[i], c3.m_orientations[i]);
+                    c3.m_positions[i] = newPos;
+                }
             }
         }
 
