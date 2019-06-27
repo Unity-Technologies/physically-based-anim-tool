@@ -8,6 +8,7 @@ using UnityEditor.IMGUI.Controls;
 public class Curve3Editor : Editor
 {
     int m_NumComSamples = 10;
+    bool showGizmos = true;
 
     void Start() { }
 
@@ -16,11 +17,13 @@ public class Curve3Editor : Editor
         if(GUILayout.Button("New point"))
         {
             Curve3 c3 = target as Curve3;
-            c3.curve.Positions.Add(new Vector3());
-            c3.curve.Orientations.Add(Quaternion.identity);
+            c3.m_positions.Add(new Vector3());
+            c3.m_orientations.Add(Quaternion.identity);
         }
 
         m_NumComSamples = EditorGUILayout.IntField("Num COM samples", m_NumComSamples);
+        showGizmos = EditorGUILayout.Toggle("Show gizmos", showGizmos);
+
         if (GUILayout.Button("Calculate COMs"))
         {
             CalculateCOMs(m_NumComSamples);
@@ -29,8 +32,8 @@ public class Curve3Editor : Editor
         if (GUILayout.Button("Wipe Points"))
         {
             Curve3 c3 = target as Curve3;
-            c3.curve.Positions.Clear();
-            c3.curve.Orientations.Clear();
+            c3.m_positions.Clear();
+            c3.m_orientations.Clear();
         }
     }
 
@@ -38,8 +41,8 @@ public class Curve3Editor : Editor
     {
         Curve3 c3 = target as Curve3;
 
-        c3.curve.Positions.Clear();
-        c3.curve.Orientations.Clear();
+        c3.m_positions.Clear();
+        c3.m_orientations.Clear();
 
         AnimationWindowInfo.GetTypeInfo();
         AnimationClip c = AnimationWindowInfo.GetClip();
@@ -57,8 +60,8 @@ public class Curve3Editor : Editor
 
             var com = selfCopy.GetComponent<CentredSkinnedMesh>().CalculateCentreOfMass();
 
-            c3.curve.Positions.Add(com);
-            c3.curve.Orientations.Add(Quaternion.identity);
+            c3.m_positions.Add(com);
+            c3.m_orientations.Add(Quaternion.identity);
         }
         DestroyImmediate(selfCopy);
     }
@@ -68,17 +71,20 @@ public class Curve3Editor : Editor
         EditorGUI.BeginChangeCheck();
         Curve3 c3 = target as Curve3;
 
-        for (int i = 0; i < c3.curve.Positions.Count; i++)
+        for (int i = 0; i < c3.m_positions.Count; i++)
         {
-            if (Tools.current == Tool.Rotate)
+            if (showGizmos)
             {
-                Quaternion newRot = Handles.RotationHandle(c3.curve.Orientations[i], c3.curve.Positions[i]);
-                c3.curve.Orientations[i] = newRot;
-            }
-            else
-            {
-                Vector3 newPos = Handles.PositionHandle(c3.curve.Positions[i], c3.curve.Orientations[i]);
-                c3.curve.Positions[i] = newPos;
+                if (Tools.current == Tool.Rotate)
+                {
+                    Quaternion newRot = Handles.RotationHandle(c3.m_orientations[i], c3.m_positions[i]);
+                    c3.m_orientations[i] = newRot;
+                }
+                else
+                {
+                    Vector3 newPos = Handles.PositionHandle(c3.m_positions[i], c3.m_orientations[i]);
+                    c3.m_positions[i] = newPos;
+                }
             }
         }
 
@@ -86,8 +92,8 @@ public class Curve3Editor : Editor
             float tIncrement = 0.05f;
             for (float t = 0.0f; t + tIncrement <= 1.0f; t += tIncrement)
             {
-                var curPos = c3.curve.EvaluatePoint(t);
-                var nextPos = c3.curve.EvaluatePoint(t + tIncrement);
+                var curPos = c3.EvaluatePoint(t);
+                var nextPos = c3.EvaluatePoint(t + tIncrement);
                 Handles.DrawLine(curPos, nextPos);
                 
             }

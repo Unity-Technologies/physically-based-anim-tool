@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 class PBAEditorWindow : EditorWindow
@@ -12,7 +7,7 @@ class PBAEditorWindow : EditorWindow
     private Curve m_physicallyAccurateCurve = new Curve();
     private Curve m_adjustedCurve = new Curve();
     private Curve m_comCurve = new Curve();
-    private int m_NumComSamples = 10;
+    private int m_NumSamples = 10;
     private AnimationClip m_clip;
 
     // Add menu named "My Window" to the Window menu
@@ -54,53 +49,53 @@ class PBAEditorWindow : EditorWindow
         //Retrieve clip
         m_clip = animator.GetCurrentAnimatorClipInfo(0)[0].clip;
         EditorGUILayout.Space();
-        m_NumComSamples = EditorGUILayout.IntField("Num samples", m_NumComSamples);
+        EditorGUILayout.Space();
+        m_NumSamples = EditorGUILayout.IntField("Num samples", m_NumSamples);
         EditorGUILayout.Space();
 
         //Draw center of mass
         if (GUILayout.Button("Draw COMs"))
         {
             m_comCurve.Clear();
-            m_comCurve = GetCOMCurves(m_clip, m_NumComSamples);
+            m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
         }
 
         //Draw authored curves
         TransformCurves[] hierarchyCurves = m_obj.GetTransformCurves(m_clip);
-        RootMotionCurves authoredCurves = AnimationInfo.GetRootMotionCurves(m_clip);
 
         int frameCount = 10;
         float timePerFrame = m_clip.length / frameCount;
-        Vector3[] deltas = new Vector3[frameCount];
+        Vector3[] rootToCOMs = new Vector3[frameCount];
         float[] times = new float[frameCount];
         for (int i = 0; i < frameCount; i++)
         {
             times[i] = i * timePerFrame;
             Vector3 comAtTime = m_obj.CalculateCentreOfMass(hierarchyCurves, times[i]);
-            Vector3 rootAtTime = authoredCurves.GetRootPosition(times[i]);
-            deltas[i] = comAtTime - rootAtTime;
+            Vector3 rootAtTime = hierarchyCurves[0].GetPosition(times[i]);
+            rootToCOMs[i] = comAtTime - rootAtTime;
         }
 
-        RootMotionCurves centreOfMassCurves = RootMotionCurves.GetCOMCurvesFromRootCurves(deltas, times, authoredCurves);    // DONE
+        TransformCurves comCurves = TransformCurves.ConvertRootCurvesToCOMCurves(rootToCOMs, times, hierarchyCurves[0]);    // DONE
 
         float takeOffTime = 0.1f;
         float landTime = 0.9f;
-        RootMotionCurves physicallyAccurateCurves = centreOfMassCurves.GetTrajectoryCurves(takeOffTime, landTime);    // DONE
+        TransformCurves physicallyAccurateCOMCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime);
 
         EditorGUILayout.Space();
         if (GUILayout.Button("Draw physically accurate curve"))
         {
             m_physicallyAccurateCurve.Clear();
-            m_physicallyAccurateCurve = GetCurveFromRootMotion(physicallyAccurateCurves);
+            m_physicallyAccurateCurve = GetCurveTransformCurve(physicallyAccurateCOMCurves, m_NumSamples);
         }
         EditorGUILayout.Space();
 
-        RootMotionCurves adjustedCurves = RootMotionCurves.GetRootCurvesFromCOMCurves(deltas, times, physicallyAccurateCurves);    // DONE
+        TransformCurves adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, physicallyAccurateCOMCurves);
 
         EditorGUILayout.Space();
-        if (GUILayout.Button("Draw physically accurate curve"))
+        if (GUILayout.Button("Draw adjusted curve"))
         {
-            m_physicallyAccurateCurve.Clear();
-            m_physicallyAccurateCurve = GetCurveFromRootMotion(physicallyAccurateCurves);
+            m_adjustedCurve.Clear();
+            m_adjustedCurve = GetCurveTransformCurve(adjustedTransCurves, m_NumSamples);
         }
         EditorGUILayout.Space();
 
@@ -108,7 +103,7 @@ class PBAEditorWindow : EditorWindow
         if(GUILayout.Button("Save"))
         {
             Undo.RecordObject(m_clip, "Changed Root AnimationCurves");
-            AnimationInfo.WriteRootMotionCurves(m_clip, adjustedCurves);
+            AnimationInfo.WriteTransformCurves(m_clip, adjustedTransCurves);
         }
 
         EditorGUILayout.EndVertical();
@@ -133,21 +128,14 @@ class PBAEditorWindow : EditorWindow
         return res;
     }
 
-    public Curve GetCurveFromRootMotion(RootMotionCurves authoredCurves)
+    public Curve GetCurveTransformCurve(TransformCurves authoredCurves, int count)
     {
         Curve res = new Curve();
-        if (authoredCurves.m_KeyTimes == null)
-            return res;
 
-        for (int i = 0; i < authoredCurves.m_KeyTimes.Count; i++)
+        for (int i = 0; i < count; i++)
         {
-            res.Positions.Add(new Vector3(authoredCurves.rootTXCurve.Evaluate(i),
-                authoredCurves.rootTYCurve.Evaluate(i),
-                authoredCurves.rootTXCurve.Evaluate(i)));
-            res.Orientations.Add(new Quaternion(authoredCurves.rootQXCurve.Evaluate(i),
-                authoredCurves.rootQYCurve.Evaluate(i),
-                authoredCurves.rootQZCurve.Evaluate(i),
-                authoredCurves.rootQWCurve.Evaluate(i)));
+            res.Positions.Add(authoredCurves.GetPosition(i));
+            res.Orientations.Add(Quaternion.identity);
         }
         return res;
     }

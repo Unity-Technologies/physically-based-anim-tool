@@ -6,24 +6,31 @@ public class Curve3Driver : MonoBehaviour
 {
     public Curve3 m_sourceCurve;
     float m_localTime;
-    public float m_timeScale = 1.0f;
 
     void Start()
     {
-        m_localTime = 0;    
+        m_localTime = 0;
     }
 
     void Update()
     {
-        float t = m_localTime - Mathf.Floor(m_localTime);
-        int idx = (int)m_localTime;
-
         if (m_sourceCurve == null) return;
     
         var csm = GetComponent<CentredSkinnedMesh>();
         if (csm == null) return;
 
-        Vector3 desiredCom = m_sourceCurve.curve.EvaluatePoint(m_localTime);
+        var animator = GetComponent<Animator>();
+        if(animator == null) return;
+
+        var clips = animator.runtimeAnimatorController.animationClips;
+        float maxAnimLen = 0.0f;
+        foreach (var c in clips)
+        {
+            maxAnimLen = Mathf.Max(c.length);
+        }
+        float t = Mathf.Clamp01(m_localTime / maxAnimLen);
+
+        Vector3 desiredCom = m_sourceCurve.EvaluatePoint(t);
         Quaternion desiredOrientation = Quaternion.identity;
         Matrix4x4 worldFromDesired = Matrix4x4.TRS(desiredCom, desiredOrientation, new Vector3(1, 1, 1));
 
@@ -32,7 +39,7 @@ public class Curve3Driver : MonoBehaviour
 
         updateTransform(transform, transform.localToWorldMatrix * worldFromCurrent.inverse * worldFromDesired);
         
-        m_localTime += Time.deltaTime * m_timeScale;
+        m_localTime += Time.deltaTime;
     }
 
     void updateTransform(Transform t, Matrix4x4 m)
