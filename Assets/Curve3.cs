@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class Curve
 {
@@ -38,6 +39,50 @@ public class Curve
         return omt * omt * m_positions[idx0]
             + 2.0f * omt * tLocal * m_positions[idx1]
             + tLocal * tLocal * m_positions[idx2];
+    }
+
+    public void DrawCurve(bool showGizmos, Color color, bool straightLines = false)
+    {
+        EditorGUI.BeginChangeCheck();
+        for (int i = 0; i < Positions.Count; i++)
+        {
+            if (showGizmos)
+            {
+                if (Tools.current == Tool.Rotate)
+                {
+                    Quaternion newRot = Handles.RotationHandle(Orientations[i], Positions[i]);
+                    Orientations[i] = newRot;
+                }
+                else
+                {
+                    Vector3 newPos = Handles.PositionHandle(Positions[i], Orientations[i]);
+                    Positions[i] = newPos;
+                }
+            }
+        }
+        {
+            Handles.color = color;
+            if (straightLines)
+            {
+                for (int i = 0; i < Positions.Count - 1; i++)
+                {
+                    Handles.DrawLine(Positions[i], Positions[i + 1]);
+                }
+            }
+            else
+            {
+                float tIncrement = 0.01f;
+                for (float t = 0.0f; t + tIncrement <= 1.0f; t += tIncrement)
+                {
+                    var curPos = EvaluatePoint(t);
+                    var nextPos = EvaluatePoint(t + tIncrement);
+                    Handles.DrawLine(curPos, nextPos);
+                }
+            }
+            Handles.color = Color.white;
+        }
+
+        EditorGUI.EndChangeCheck();
     }
 }
 

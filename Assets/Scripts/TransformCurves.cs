@@ -87,7 +87,17 @@ public class TransformCurves
             m_RotW = copyFrom.m_RotW;
             m_SclX = copyFrom.m_SclX;
             m_SclY = copyFrom.m_SclY;
-            m_SclZ = copyFrom.m_SclZ;            
+            m_SclZ = copyFrom.m_SclZ;
+            m_PosXBinding = copyFrom.m_PosXBinding;
+            m_PosYBinding = copyFrom.m_PosYBinding;
+            m_PosZBinding = copyFrom.m_PosZBinding;
+            m_RotXBinding = copyFrom.m_RotXBinding;
+            m_RotYBinding = copyFrom.m_RotYBinding;
+            m_RotZBinding = copyFrom.m_RotZBinding;
+            m_RotWBinding = copyFrom.m_RotWBinding;
+            m_SclXBinding = copyFrom.m_SclXBinding;
+            m_SclYBinding = copyFrom.m_SclYBinding;
+            m_SclZBinding = copyFrom.m_SclZBinding;
         }
         
         m_PosX = x;
@@ -159,26 +169,19 @@ public class TransformCurves
         Vector3 takeOffPosition = comCurves.GetPosition(takeOffTime);
         Vector3 landPosition = comCurves.GetPosition(landTime);
         Vector3 delta = landPosition - takeOffPosition;
-        
-        float time = takeOffTime;
-        
-        int xIndex = -1;
-        int yIndex = -1;
-        int zIndex = -1;
-        
+                
         AnimationCurve x = comCurves.m_PosX;
         AnimationCurve y = comCurves.m_PosY;
         AnimationCurve z = comCurves.m_PosZ;
+
+        float requiredInitialSpeedY = (delta.y - 0.5f * gravity * duration * duration) / duration;
 
         for (int i = 0; i < x.length; i++)
         {
             float keyTime = x[i].time;
             if (keyTime >= takeOffTime && keyTime <= landTime)
             {
-                x.RemoveKey(i);
-
-                if (xIndex == -1)
-                    xIndex = i;
+                x.MoveKey(i, new Keyframe(keyTime, GetLateralTrajectory(keyTime - takeOffTime, duration, delta.x) + takeOffPosition.x));
             }
         }
         
@@ -187,10 +190,7 @@ public class TransformCurves
             float keyTime = y[i].time;
             if (keyTime >= takeOffTime && keyTime <= landTime)
             {
-                y.RemoveKey(i);
-
-                if (yIndex == -1)
-                    yIndex = i;
+                y.MoveKey(i, new Keyframe(keyTime, GetVerticalTrajectory2(keyTime - takeOffTime, requiredInitialSpeedY, gravity) + takeOffPosition.y));
             }
         }
         
@@ -199,34 +199,8 @@ public class TransformCurves
             float keyTime = z[i].time;
             if (keyTime >= takeOffTime && keyTime <= landTime)
             {
-                z.RemoveKey(i);
-
-                if (zIndex == -1)
-                    zIndex = i;
+                z.MoveKey(i, new Keyframe(keyTime, GetLateralTrajectory(keyTime - takeOffTime, duration, delta.z) + takeOffPosition.z));
             }
-        }
-
-        while (time < landTime)
-        {
-            x.AddKey(new Keyframe(time, GetLateralTrajectory(time, duration, delta.x) + takeOffPosition.x));
-            y.AddKey(new Keyframe(time, GetVerticalTrajectory(time, duration, gravity) + takeOffPosition.y));
-            z.AddKey(new Keyframe(time, GetLateralTrajectory(time, duration, delta.z) + takeOffPosition.z));
-            
-            if (Mathf.Approximately(comCurves.m_PosX[xIndex].time, time))
-                xIndex++;
-            if (Mathf.Approximately(comCurves.m_PosY[yIndex].time, time))
-                yIndex++;
-            if (Mathf.Approximately(comCurves.m_PosZ[zIndex].time, time))
-                zIndex++;
-
-            if (xIndex < comCurves.m_PosX.length)
-                time = comCurves.m_PosX[xIndex].time;
-
-            if (yIndex < comCurves.m_PosY.length && comCurves.m_PosY[yIndex].time < time)
-                time = comCurves.m_PosY[yIndex].time;
-            
-            if (zIndex < comCurves.m_PosZ.length && comCurves.m_PosZ[zIndex].time < time)
-                time = comCurves.m_PosZ[zIndex].time;
         }
         
         for (int i = 0; i < x.length; i++)
@@ -320,5 +294,10 @@ public class TransformCurves
     static float GetVerticalTrajectory(float time, float duration, float gravity)
     {
         return 0.5f * gravity * time * time - 0.5f * gravity * duration * time;
+    }
+
+    static float GetVerticalTrajectory2(float time, float u, float a)
+    {
+        return u * time + 0.5f * a * time * time;
     }
 }
