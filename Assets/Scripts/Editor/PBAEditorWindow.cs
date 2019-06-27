@@ -222,6 +222,7 @@ class PBAEditorWindow : EditorWindow
        // m_oldComCurve.DrawCurve(m_showGizmos, Color.cyan);
         if (m_BezierDrawer != null)
             m_BezierDrawer.DrawBezier(Color.red, 5f);
+
         m_comCurve.DrawCurve(m_showGizmos, Color.cyan);
         if (m_comCurve.HasPoints)
         {
