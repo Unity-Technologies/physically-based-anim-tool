@@ -80,7 +80,7 @@ public class Example
         
         float takeOffTime = 0.1f;
         float landTime = 0.9f;
-        TransformCurves physicallyAccurateCOMCurves = comCurves.GetTrajectoryCurves(takeOffTime, landTime);
+        TransformCurves physicallyAccurateCOMCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime);
         
         TransformCurves adjustedRootCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, physicallyAccurateCOMCurves);
         

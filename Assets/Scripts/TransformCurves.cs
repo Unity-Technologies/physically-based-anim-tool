@@ -52,22 +52,25 @@ public class TransformCurves
 
     public TransformCurves(TransformCurves copyFrom, AnimationCurve x, AnimationCurve y, AnimationCurve z)
     {
-        m_TransformPath = copyFrom.m_TransformPath;
-        m_Parent = copyFrom.m_Parent;
-        m_DefaultPos = copyFrom.m_DefaultPos;
-        m_DefaultRot = copyFrom.m_DefaultRot;
-        m_DefaultScl = copyFrom.m_DefaultScl;
+        if (copyFrom != null)
+        {
+            m_TransformPath = copyFrom.m_TransformPath;
+            m_Parent = copyFrom.m_Parent;
+            m_DefaultPos = copyFrom.m_DefaultPos;
+            m_DefaultRot = copyFrom.m_DefaultRot;
+            m_DefaultScl = copyFrom.m_DefaultScl;
+            m_RotX = copyFrom.m_RotX;
+            m_RotY = copyFrom.m_RotY;
+            m_RotZ = copyFrom.m_RotZ;
+            m_RotW = copyFrom.m_RotW;
+            m_SclX = copyFrom.m_SclX;
+            m_SclY = copyFrom.m_SclY;
+            m_SclZ = copyFrom.m_SclZ;            
+        }
         
         m_PosX = x;
         m_PosY = y;
         m_PosZ = z;
-        m_RotX = copyFrom.m_RotX;
-        m_RotY = copyFrom.m_RotY;
-        m_RotZ = copyFrom.m_RotZ;
-        m_RotW = copyFrom.m_RotW;
-        m_SclX = copyFrom.m_SclX;
-        m_SclY = copyFrom.m_SclY;
-        m_SclZ = copyFrom.m_SclZ;
     }
     
     Vector3 GetLocalPosition (float time)
@@ -128,9 +131,59 @@ public class TransformCurves
         return allCurves;
     }
 
-    public TransformCurves GetTrajectoryCurves(float takeOffTime, float landTime, float gravity = -9.81f)
+    public static TransformCurves GetTrajectoryCurves(TransformCurves comCurves, float takeOffTime, float landTime, float gravity = -9.81f)
     {
-        return new TransformCurves(null, null, null);
+        float duration = landTime - takeOffTime;
+        Vector3 takeOffPosition = comCurves.GetPosition(takeOffTime);
+        Vector3 landPosition = comCurves.GetPosition(landTime);
+        Vector3 delta = landPosition - takeOffPosition;
+        
+        int xIndex = 0;
+        int yIndex = 0;
+        int zIndex = 0;
+
+        float time = 0f;
+        
+        AnimationCurve x = new AnimationCurve();
+        AnimationCurve y = new AnimationCurve();
+        AnimationCurve z = new AnimationCurve();
+
+        while (xIndex < comCurves.m_PosX.length || yIndex < comCurves.m_PosY.length || zIndex < comCurves.m_PosZ.length)
+        {
+            x.AddKey(new Keyframe(time, GetLateralTrajectory(time, duration, delta.x) + takeOffPosition.x));
+            y.AddKey(new Keyframe(time, GetVerticalTrajectory(time, duration, gravity) + takeOffPosition.y));
+            z.AddKey(new Keyframe(time, GetLateralTrajectory(time, duration, delta.z) + takeOffPosition.z));
+            
+            if (Mathf.Approximately(comCurves.m_PosX[xIndex].time, time))
+                xIndex++;
+            if (Mathf.Approximately(comCurves.m_PosY[yIndex].time, time))
+                yIndex++;
+            if (Mathf.Approximately(comCurves.m_PosZ[zIndex].time, time))
+                zIndex++;
+
+            if (xIndex < comCurves.m_PosX.length)
+                time = comCurves.m_PosX[xIndex].time;
+
+            if (yIndex < comCurves.m_PosY.length && comCurves.m_PosY[yIndex].time < time)
+                time = comCurves.m_PosY[yIndex].time;
+            
+            if (zIndex < comCurves.m_PosZ.length && comCurves.m_PosZ[zIndex].time < time)
+                time = comCurves.m_PosZ[zIndex].time;
+        }
+        
+        for (int i = 0; i < x.length; i++)
+        {
+            AnimationUtility.SetKeyLeftTangentMode (x, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode (x, i, AnimationUtility.TangentMode.ClampedAuto);
+            
+            AnimationUtility.SetKeyLeftTangentMode (y, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode (y, i, AnimationUtility.TangentMode.ClampedAuto);
+            
+            AnimationUtility.SetKeyLeftTangentMode (z, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode (z, i, AnimationUtility.TangentMode.ClampedAuto);
+        }
+        
+        return new TransformCurves(comCurves, x, y, z);
     }
 
     public static TransformCurves ConvertRootCurvesToCOMCurves(Vector3[] rootToCOMs, float[] times,
@@ -179,5 +232,15 @@ public class TransformCurves
         TransformCurves rootCurves = new TransformCurves(comCurves, x, y, z);
         
         return rootCurves;
+    }
+
+    static float GetLateralTrajectory(float time, float duration, float distance)
+    {
+        return distance * time / duration;
+    }
+
+    static float GetVerticalTrajectory(float time, float duration, float gravity)
+    {
+        return 0.5f * gravity * time * time - 0.5f * gravity * duration * time;
     }
 }
