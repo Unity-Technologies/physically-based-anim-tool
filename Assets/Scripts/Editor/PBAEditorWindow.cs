@@ -177,8 +177,6 @@ class PBAEditorWindow : EditorWindow
         }
         return res;
     }
-
-
     void OnSceneGUI(SceneView view)
     {
         m_comCurve.DrawCurve(showGizmos, Color.white);
