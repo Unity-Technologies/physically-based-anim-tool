@@ -17,6 +17,8 @@ public class Curve
         m_orientations.Clear();
     }
 
+    public bool HasPoints => m_positions.Count > 0;
+
     public Vector3 EvaluatePoint(float t)
     {
         t = Mathf.Clamp01(t);

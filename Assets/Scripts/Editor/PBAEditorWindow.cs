@@ -11,10 +11,14 @@ class PBAEditorWindow : EditorWindow
     private AnimationClip m_clip;
     private TransformCurves m_physicallyAccurateTransCurves = null;
     private TransformCurves m_adjustedTransCurves = null;
-    private bool showGizmos = true;
+    private bool showGizmos = false;
     private float m_takeOffTime = 1.375f;
     private float m_landTime = 3.03f;
     private float m_gravity = -9.8f;
+
+    // Used to determine if we want to recompute:
+    private CentredSkinnedMesh m_prevObj = null;
+    private int m_prevNumSamples = 0;
 
     // Add menu named "My Window" to the Window menu
     [MenuItem("Window/Physically Based Animation Example")]
@@ -61,7 +65,7 @@ class PBAEditorWindow : EditorWindow
         m_clip = animator.GetCurrentAnimatorClipInfo(0)[0].clip;
         EditorGUILayout.Space();
         EditorGUILayout.Space();
-        m_NumSamples = EditorGUILayout.IntField("Num samples", m_NumSamples);
+        m_NumSamples = Mathf.Max(2, EditorGUILayout.IntField("Num samples", m_NumSamples));
         EditorGUILayout.Space();
         m_takeOffTime = EditorGUILayout.FloatField("Take Off time", m_takeOffTime);
         EditorGUILayout.Space();
@@ -73,8 +77,14 @@ class PBAEditorWindow : EditorWindow
         showGizmos = EditorGUILayout.Toggle("Show gizmos", showGizmos);
 
         EditorGUILayout.Space();
-        if (GUILayout.Button("Compute Curves"))
+
+        bool userChangedOptions = m_obj != m_prevObj || m_NumSamples != m_prevNumSamples;
+
+        if (userChangedOptions)
         {
+            m_prevObj = m_obj;
+            m_prevNumSamples = m_NumSamples;
+
             //Draw authored curves
             TransformCurves[] hierarchyCurves = m_obj.GetTransformCurves(m_clip);
 
@@ -99,7 +109,8 @@ class PBAEditorWindow : EditorWindow
         EditorGUILayout.Space();
         var style = new GUIStyle(GUI.skin.button);
         style.normal.textColor = Color.green;
-        if (GUILayout.Button("Draw physically accurate curve", style))
+        if (GUILayout.Button("Draw physically accurate curve", style)
+            || (userChangedOptions && m_physicallyAccurateCurve.HasPoints))
         {
             m_BezierDrawer = new BezierDrawer(m_physicallyAccurateTransCurves.m_PosX, m_physicallyAccurateTransCurves.m_PosY, m_physicallyAccurateTransCurves.m_PosZ);
             
@@ -113,7 +124,8 @@ class PBAEditorWindow : EditorWindow
         EditorGUILayout.Space();
 
         style.normal.textColor = Color.cyan;
-        if (GUILayout.Button("Draw adjusted curve", style))
+        if (GUILayout.Button("Draw adjusted curve", style)
+            || (userChangedOptions && m_adjustedCurve.HasPoints))
         {
             m_adjustedCurve.Clear();
             if(m_adjustedTransCurves != null)
@@ -126,7 +138,8 @@ class PBAEditorWindow : EditorWindow
 
         //Draw center of mass
         style.normal.textColor = Color.white;
-        if (GUILayout.Button("Draw COMs", style))
+        if (GUILayout.Button("Draw COMs", style)
+            || (userChangedOptions && m_comCurve.HasPoints))
         {
             m_comCurve.Clear();
             m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
