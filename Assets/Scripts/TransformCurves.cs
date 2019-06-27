@@ -5,16 +5,16 @@ public class TransformCurves
 {
     public readonly Transform transform;
 
-    readonly AnimationCurve m_PosX;
-    readonly AnimationCurve m_PosY;
-    readonly AnimationCurve m_PosZ;
-    readonly AnimationCurve m_RotX;
-    readonly AnimationCurve m_RotY;
-    readonly AnimationCurve m_RotZ;
-    readonly AnimationCurve m_RotW;
-    readonly AnimationCurve m_SclX;
-    readonly AnimationCurve m_SclY;
-    readonly AnimationCurve m_SclZ;
+    public AnimationCurve m_PosX { get; private set; }
+    public AnimationCurve m_PosY { get; private set; }
+    public AnimationCurve m_PosZ { get; private set; }
+    public AnimationCurve m_RotX { get; private set; }
+    public AnimationCurve m_RotY { get; private set; }
+    public AnimationCurve m_RotZ { get; private set; }
+    public AnimationCurve m_RotW { get; private set; }
+    public AnimationCurve m_SclX { get; private set; }
+    public AnimationCurve m_SclY { get; private set; }
+    public AnimationCurve m_SclZ { get; private set; }
 
     readonly string m_TransformPath;
 
