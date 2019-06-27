@@ -12,6 +12,9 @@ class PBAEditorWindow : EditorWindow
     private TransformCurves m_physicallyAccurateTransCurves = null;
     private TransformCurves m_adjustedTransCurves = null;
     private bool showGizmos = true;
+    private float m_takeOffTime = 1.375f;
+    private float m_landTime = 3.03f;
+    private float m_gravity = -9.8f;
 
     // Add menu named "My Window" to the Window menu
     [MenuItem("Window/Physically Based Animation Example")]
@@ -60,6 +63,12 @@ class PBAEditorWindow : EditorWindow
         EditorGUILayout.Space();
         m_NumSamples = EditorGUILayout.IntField("Num samples", m_NumSamples);
         EditorGUILayout.Space();
+        m_takeOffTime = EditorGUILayout.FloatField("Take Off time", m_takeOffTime);
+        EditorGUILayout.Space();
+        m_landTime = EditorGUILayout.FloatField("Land Time", m_landTime);
+        EditorGUILayout.Space();
+        m_gravity = EditorGUILayout.FloatField("Gravity", m_gravity);
+        EditorGUILayout.Space();
 
         showGizmos = EditorGUILayout.Toggle("Show gizmos", showGizmos);
 
@@ -82,10 +91,7 @@ class PBAEditorWindow : EditorWindow
 
             TransformCurves comCurves = TransformCurves.ConvertRootCurvesToCOMCurves(rootToCOMs, times, hierarchyCurves[0]);    // DONE
 
-            float takeOffTime = 1.375f;
-            float landTime = 3.03f;
-            float gravity = -9.8f;
-            m_physicallyAccurateTransCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime, gravity);
+            m_physicallyAccurateTransCurves = TransformCurves.GetTrajectoryCurves(comCurves, m_takeOffTime, m_landTime, m_gravity);
 
             m_adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, m_physicallyAccurateTransCurves);
         }
@@ -96,7 +102,6 @@ class PBAEditorWindow : EditorWindow
         if (GUILayout.Button("Draw physically accurate curve", style))
         {
             m_BezierDrawer = new BezierDrawer(m_physicallyAccurateTransCurves.m_PosX, m_physicallyAccurateTransCurves.m_PosY, m_physicallyAccurateTransCurves.m_PosZ);
-            
             
             m_physicallyAccurateCurve.Clear();
             if (m_physicallyAccurateTransCurves != null)
@@ -136,6 +141,7 @@ class PBAEditorWindow : EditorWindow
             m_comCurve.Clear();
             m_adjustedCurve.Clear();
             m_physicallyAccurateCurve.Clear();
+            m_BezierDrawer = null;
             SceneView.RepaintAll();
         }
 
