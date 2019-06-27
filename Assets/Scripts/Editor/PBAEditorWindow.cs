@@ -55,13 +55,6 @@ class PBAEditorWindow : EditorWindow
         m_NumSamples = EditorGUILayout.IntField("Num samples", m_NumSamples);
         EditorGUILayout.Space();
 
-        //Draw center of mass
-        if (GUILayout.Button("Draw COMs"))
-        {
-            m_comCurve.Clear();
-            m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
-        }
-
         EditorGUILayout.Space();
         if (GUILayout.Button("Compute Curves"))
         {
@@ -81,9 +74,9 @@ class PBAEditorWindow : EditorWindow
 
             TransformCurves comCurves = TransformCurves.ConvertRootCurvesToCOMCurves(rootToCOMs, times, hierarchyCurves[0]);    // DONE
 
-            float takeOffTime = 0.1f;
-            float landTime = 0.9f;
-            float gravity = 0.0f;
+            float takeOffTime = 1.375f;
+            float landTime = 3.03f;
+            float gravity = -9.8f;
             m_physicallyAccurateCOMCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime, gravity);
 
             m_adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, m_physicallyAccurateCOMCurves);
@@ -110,8 +103,16 @@ class PBAEditorWindow : EditorWindow
         }
         EditorGUILayout.Space();
 
+        //Draw center of mass
+        if (GUILayout.Button("Draw COMs"))
+        {
+            m_comCurve.Clear();
+            m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
+        }
+
+        EditorGUILayout.Space();
         //Overwrite animation clip
-        if(GUILayout.Button("Save"))
+        if (GUILayout.Button("Save"))
         {
             Undo.RecordObject(m_clip, "Changed Root AnimationCurves");
             if (m_adjustedTransCurves != null)
