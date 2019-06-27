@@ -224,8 +224,7 @@ public class TransformCurves
         return new TransformCurves(comCurves, x, y, z);
     }
 
-    public static TransformCurves ConvertRootCurvesToCOMCurves(Vector3[] rootToCOMs, float[] times,
-        TransformCurves rootCurves)
+    public static TransformCurves ConvertRootCurvesToCOMCurves(Vector3[] rootToCOMs, float[] times, TransformCurves rootCurves)
     {
         AnimationCurve x = new AnimationCurve();
         AnimationCurve y = new AnimationCurve();
@@ -244,6 +243,85 @@ public class TransformCurves
         }
         
         TransformCurves comCurves = new TransformCurves(rootCurves, x, y, z);
+
+        return comCurves;
+    }
+
+    public static TransformCurves ConvertRootCurvesToCOMCurves(CentredSkinnedMesh centredSkinnedMesh,
+        TransformCurves[] hierarchyCurves)
+    {
+        AnimationCurve x = new AnimationCurve();
+        AnimationCurve y = new AnimationCurve();
+        AnimationCurve z = new AnimationCurve();
+        
+        for (int i = 0; i < hierarchyCurves[0].m_PosX.length; i++)
+        {
+            float time = hierarchyCurves[0].m_PosX[i].time;
+
+            Vector3 com = centredSkinnedMesh.CalculateCentreOfMass(hierarchyCurves, time);
+
+            x.AddKey(time, com.x);
+            y.AddKey(time, com.y);
+            z.AddKey(time, com.z);
+        }
+        
+        for (int i = 0; i < hierarchyCurves[0].m_PosY.length; i++)
+        {
+            float time = hierarchyCurves[0].m_PosY[i].time;
+
+            bool doContinue = false;
+            for (int j = 0; j < x.length; j++)
+            {
+                if (Mathf.Approximately(x[j].time, time))
+                {
+                    doContinue = true;
+                    break;
+                }
+            }
+            if(doContinue)
+                continue;
+
+            Vector3 com = centredSkinnedMesh.CalculateCentreOfMass(hierarchyCurves, time);
+
+            x.AddKey(time, com.x);
+            y.AddKey(time, com.y);
+            z.AddKey(time, com.z);
+        }
+        
+        for (int i = 0; i < hierarchyCurves[0].m_PosZ.length; i++)
+        {
+            float time = hierarchyCurves[0].m_PosZ[i].time;
+
+            bool doContinue = false;
+            for (int j = 0; j < x.length; j++)
+            {
+                if (Mathf.Approximately(x[j].time, time))
+                {
+                    doContinue = true;
+                    break;
+                }
+            }
+            if(doContinue)
+                continue;
+
+            Vector3 com = centredSkinnedMesh.CalculateCentreOfMass(hierarchyCurves, time);
+
+            x.AddKey(time, com.x);
+            y.AddKey(time, com.y);
+            z.AddKey(time, com.z);
+        }
+        
+        for (int i = 0; i < x.length; i++)
+        {
+            AnimationUtility.SetKeyLeftTangentMode(x, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyLeftTangentMode(y, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyLeftTangentMode(z, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode(x, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode(y, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode(z, i, AnimationUtility.TangentMode.ClampedAuto);
+        }
+        
+        TransformCurves comCurves = new TransformCurves(hierarchyCurves[0], x, y, z);
 
         return comCurves;
     }

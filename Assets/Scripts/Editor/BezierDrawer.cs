@@ -186,12 +186,9 @@ public class BezierDrawer
 
             bezier3DPoints[i] = new Bezier3DPoints();
             bezier3DPoints[i].p0 = new Vector3(xPoint.p0, yPoint.p0, zPoint.p0);
-            bezier3DPoints[i].p1 = new Vector3(xPoint.p1, yPoint.p1, zPoint.p1) ;
+            bezier3DPoints[i].p1 = new Vector3(xPoint.p1, yPoint.p1, zPoint.p1);
             bezier3DPoints[i].p2 = new Vector3(xPoint.p2, yPoint.p2, zPoint.p2);
             bezier3DPoints[i].p3 = new Vector3(xPoint.p3, yPoint.p3, zPoint.p3);
-
-            //bezier3DPoints[i].p1 = (bezier3DPoints[i].p1 - bezier3DPoints[i].p0) * 0.1f + bezier3DPoints[i].p0;
-            //bezier3DPoints[i].p2 = (bezier3DPoints[i].p2 - bezier3DPoints[i].p3) * 0.1f + bezier3DPoints[i].p3;
 
         }
 
