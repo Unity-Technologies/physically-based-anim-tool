@@ -64,6 +64,6 @@ public class Example
         
         TransformCurves adjustedRootCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, physicallyAccurateCOMCurves);
         
-        AnimationInfo.WriteTransformCurves(clip, adjustedRootCurves);
+        adjustedRootCurves.WriteCurves(clip);
     }
 }

@@ -9,7 +9,7 @@ class PBAEditorWindow : EditorWindow
     private Curve m_comCurve = new Curve();
     private int m_NumSamples = 10;
     private AnimationClip m_clip;
-    private TransformCurves m_physicallyAccurateCOMCurves = null;
+    private TransformCurves m_physicallyAccurateTransCurves = null;
     private TransformCurves m_adjustedTransCurves = null;
 
     // Add menu named "My Window" to the Window menu
@@ -47,6 +47,11 @@ class PBAEditorWindow : EditorWindow
             Debug.LogWarning("No Animator is associated to " + m_obj.name);
             return;
         }
+        else if(animator.GetCurrentAnimatorClipInfo(0).Length == 0)
+        {
+            Debug.LogWarning("Current animator clip info empty ");
+            return;
+        }
 
         //Retrieve clip
         m_clip = animator.GetCurrentAnimatorClipInfo(0)[0].clip;
@@ -77,19 +82,20 @@ class PBAEditorWindow : EditorWindow
             float takeOffTime = 1.375f;
             float landTime = 3.03f;
             float gravity = -9.8f;
-            m_physicallyAccurateCOMCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime, gravity);
+            m_physicallyAccurateTransCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime, gravity);
 
-            m_adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, m_physicallyAccurateCOMCurves);
+            m_adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, m_physicallyAccurateTransCurves);
         }
 
         EditorGUILayout.Space();
         if (GUILayout.Button("Draw physically accurate curve"))
         {
             m_physicallyAccurateCurve.Clear();
-            if (m_physicallyAccurateCOMCurves != null)
-                m_physicallyAccurateCurve = GetCurveTransformCurve(m_physicallyAccurateCOMCurves, m_NumSamples);
+            if (m_physicallyAccurateTransCurves != null)
+                m_physicallyAccurateCurve = GetCurveTransformCurve(m_physicallyAccurateTransCurves, m_NumSamples);
             else
                 Debug.Log("Compute curves first");
+           // OnSceneGUI(SceneView.currentDrawingSceneView);
         }
         EditorGUILayout.Space();
 
@@ -100,14 +106,26 @@ class PBAEditorWindow : EditorWindow
                 m_adjustedCurve = GetCurveTransformCurve(m_adjustedTransCurves, m_NumSamples);
             else
                 Debug.Log("Compute curves first");
+           // OnSceneGUI(SceneView.currentDrawingSceneView);
         }
         EditorGUILayout.Space();
 
         //Draw center of mass
         if (GUILayout.Button("Draw COMs"))
         {
+            m_physicallyAccurateCurve.Clear();
             m_comCurve.Clear();
             m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
+        }
+
+        EditorGUILayout.Space();
+        //Wipe curves
+        if (GUILayout.Button("Wipe all curves"))
+        {
+            m_comCurve.Clear();
+            m_adjustedCurve.Clear();
+            m_physicallyAccurateCurve.Clear();
+            SceneView.RepaintAll();
         }
 
         EditorGUILayout.Space();
@@ -116,7 +134,7 @@ class PBAEditorWindow : EditorWindow
         {
             Undo.RecordObject(m_clip, "Changed Root AnimationCurves");
             if (m_adjustedTransCurves != null)
-                AnimationInfo.WriteTransformCurves(m_clip, m_adjustedTransCurves);
+                m_adjustedTransCurves.WriteCurves(m_clip);
             else
                 Debug.Log("Compute curves first");
         }

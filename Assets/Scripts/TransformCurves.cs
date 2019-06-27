@@ -83,7 +83,14 @@ public class TransformCurves
             m_RotW = copyFrom.m_RotW;
             m_SclX = copyFrom.m_SclX;
             m_SclY = copyFrom.m_SclY;
-            m_SclZ = copyFrom.m_SclZ;            
+            m_SclZ = copyFrom.m_SclZ;
+            m_PosXBinding = copyFrom.m_PosXBinding;
+            m_PosYBinding = copyFrom.m_PosYBinding;
+            m_PosZBinding = copyFrom.m_PosZBinding;
+            m_RotXBinding = copyFrom.m_RotXBinding;
+            m_RotYBinding = copyFrom.m_RotYBinding;
+            m_RotZBinding = copyFrom.m_RotZBinding;
+            m_RotWBinding = copyFrom.m_RotWBinding;
         }
         
         m_PosX = x;
