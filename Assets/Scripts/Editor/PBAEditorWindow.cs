@@ -72,8 +72,11 @@ class PBAEditorWindow : EditorWindow
         m_NumSamples = Mathf.Max(2, EditorGUILayout.IntField("Num samples", m_NumSamples));
         EditorGUILayout.Space();
         m_takeOffTime = EditorGUILayout.FloatField("Take Off time", m_takeOffTime);
-        EditorGUILayout.Space();
+        m_takeOffTime = Mathf.Clamp(m_takeOffTime, 0f, m_landTime);
         m_landTime = EditorGUILayout.FloatField("Land Time", m_landTime);
+        m_landTime = Mathf.Clamp(m_landTime, m_takeOffTime, m_clip.length);
+        EditorGUILayout.MinMaxSlider(GUIContent.none, ref m_takeOffTime, ref m_landTime, 0f, m_clip.length);
+
         EditorGUILayout.Space();
         m_gravity = EditorGUILayout.FloatField("Gravity", m_gravity);
         EditorGUILayout.Space();
@@ -83,6 +86,7 @@ class PBAEditorWindow : EditorWindow
         EditorGUILayout.Space();
 
         bool userChangedOptions = m_obj != m_prevObj || m_NumSamples != m_prevNumSamples || m_takeOffTime != m_prevTakeOffTime || m_landTime != m_prevLandTime;
+        userChangedOptions |= m_physicallyAccurateTransCurves == null;
 
         if (userChangedOptions)
         {
@@ -143,16 +147,16 @@ class PBAEditorWindow : EditorWindow
             SceneView.RepaintAll();
         }
         EditorGUILayout.Space();
-        style.normal.textColor = Color.white;
+        style.normal.textColor = Color.cyan;
 
         //Draw center of mass
-       /* if (GUILayout.Button("Draw COM curves", style)
+        if (GUILayout.Button("Draw COM curves", style)
             || (userChangedOptions && m_comCurve.HasPoints))
         {
             m_comCurve.Clear();
             m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
             SceneView.RepaintAll();
-        }*/
+        }
 
         EditorGUILayout.Space();
         style.normal.textColor = Color.white;
@@ -218,6 +222,7 @@ class PBAEditorWindow : EditorWindow
         m_oldComCurve.DrawCurve(m_showGizmos, Color.cyan);
         if (m_BezierDrawer != null)
             m_BezierDrawer.DrawBezier(Color.red, 5f);
+        m_comCurve.DrawCurve(m_showGizmos, Color.cyan);
     }
 }
 
