@@ -41,7 +41,7 @@ public class Curve
             + tLocal * tLocal * m_positions[idx2];
     }
 
-    public void DrawCurve(bool showGizmos, Color color)
+    public void DrawCurve(bool showGizmos, Color color, bool straightLines = false)
     {
         EditorGUI.BeginChangeCheck();
         for (int i = 0; i < Positions.Count; i++)
@@ -62,15 +62,26 @@ public class Curve
         }
         {
             Handles.color = color;
-            float tIncrement = 0.05f;
-            for (float t = 0.0f; t + tIncrement <= 1.0f; t += tIncrement)
+            if (straightLines)
             {
-                var curPos = EvaluatePoint(t);
-                var nextPos = EvaluatePoint(t + tIncrement);
-                Handles.DrawLine(curPos, nextPos);
+                for (int i = 0; i < Positions.Count - 1; i++)
+                {
+                    Handles.DrawLine(Positions[i], Positions[i + 1]);
+                }
+            }
+            else
+            {
+                float tIncrement = 0.01f;
+                for (float t = 0.0f; t + tIncrement <= 1.0f; t += tIncrement)
+                {
+                    var curPos = EvaluatePoint(t);
+                    var nextPos = EvaluatePoint(t + tIncrement);
+                    Handles.DrawLine(curPos, nextPos);
+                }
             }
             Handles.color = Color.white;
         }
+
         EditorGUI.EndChangeCheck();
     }
 }

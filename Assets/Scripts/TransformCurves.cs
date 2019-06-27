@@ -165,26 +165,19 @@ public class TransformCurves
         Vector3 takeOffPosition = comCurves.GetPosition(takeOffTime);
         Vector3 landPosition = comCurves.GetPosition(landTime);
         Vector3 delta = landPosition - takeOffPosition;
-        
-        float time = takeOffTime;
-        
-        int xIndex = -1;
-        int yIndex = -1;
-        int zIndex = -1;
-        
+                
         AnimationCurve x = comCurves.m_PosX;
         AnimationCurve y = comCurves.m_PosY;
         AnimationCurve z = comCurves.m_PosZ;
+
+        float requiredInitialSpeedY = (delta.y - 0.5f * gravity * duration * duration) / duration;
 
         for (int i = 0; i < x.length; i++)
         {
             float keyTime = x[i].time;
             if (keyTime >= takeOffTime && keyTime <= landTime)
             {
-                x.RemoveKey(i);
-
-                if (xIndex == -1)
-                    xIndex = i;
+                x.MoveKey(i, new Keyframe(keyTime, GetLateralTrajectory(keyTime - takeOffTime, duration, delta.x) + takeOffPosition.x));
             }
         }
         
@@ -193,10 +186,7 @@ public class TransformCurves
             float keyTime = y[i].time;
             if (keyTime >= takeOffTime && keyTime <= landTime)
             {
-                y.RemoveKey(i);
-
-                if (yIndex == -1)
-                    yIndex = i;
+                y.MoveKey(i, new Keyframe(keyTime, GetVerticalTrajectory2(keyTime - takeOffTime, requiredInitialSpeedY, gravity) + takeOffPosition.y));
             }
         }
         
@@ -205,46 +195,8 @@ public class TransformCurves
             float keyTime = z[i].time;
             if (keyTime >= takeOffTime && keyTime <= landTime)
             {
-                z.RemoveKey(i);
-
-                if (zIndex == -1)
-                    zIndex = i;
+                z.MoveKey(i, new Keyframe(keyTime, GetLateralTrajectory(keyTime - takeOffTime, duration, delta.z) + takeOffPosition.z));
             }
-        }
-
-        float requiredInitialSpeed = (delta.y - 0.5f * gravity * duration * duration) / duration;
-
-        while (time < landTime)
-        {
-            if (time >= takeOffTime && time <= landTime)
-            {
-                y.AddKey(new Keyframe(time, GetVerticalTrajectory2(time - takeOffTime, requiredInitialSpeed, gravity) + takeOffPosition.y));
-                x.AddKey(new Keyframe(time, GetLateralTrajectory(time - takeOffTime, duration, delta.x) + takeOffPosition.x));
-                z.AddKey(new Keyframe(time, GetLateralTrajectory(time - takeOffTime, duration, delta.z) + takeOffPosition.z));
-            }
-            else
-            {
-                var comT = comCurves.GetPosition(time);
-                x.AddKey(new Keyframe(time, comT.x));
-                y.AddKey(new Keyframe(time, comT.y));
-                z.AddKey(new Keyframe(time, comT.z));
-            }
-            
-            if (Mathf.Approximately(comCurves.m_PosX[xIndex].time, time))
-                xIndex++;
-            if (Mathf.Approximately(comCurves.m_PosY[yIndex].time, time))
-                yIndex++;
-            if (Mathf.Approximately(comCurves.m_PosZ[zIndex].time, time))
-                zIndex++;
-
-            if (xIndex < comCurves.m_PosX.length)
-                time = comCurves.m_PosX[xIndex].time;
-
-            if (yIndex < comCurves.m_PosY.length && comCurves.m_PosY[yIndex].time < time)
-                time = comCurves.m_PosY[yIndex].time;
-            
-            if (zIndex < comCurves.m_PosZ.length && comCurves.m_PosZ[zIndex].time < time)
-                time = comCurves.m_PosZ[zIndex].time;
         }
         
         for (int i = 0; i < x.length; i++)

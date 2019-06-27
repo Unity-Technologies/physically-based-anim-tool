@@ -97,7 +97,7 @@ class PBAEditorWindow : EditorWindow
         {
             m_physicallyAccurateCurve.Clear();
             if (m_physicallyAccurateTransCurves != null)
-                m_physicallyAccurateCurve = GetCurveTransformCurve(m_physicallyAccurateTransCurves, m_NumSamples);
+                m_physicallyAccurateCurve = GetCurveTransformCurve(m_physicallyAccurateTransCurves, m_NumSamples, m_clip.length);
             else
                 Debug.Log("Compute curves first");
             SceneView.RepaintAll();
@@ -109,7 +109,7 @@ class PBAEditorWindow : EditorWindow
         {
             m_adjustedCurve.Clear();
             if(m_adjustedTransCurves != null)
-                m_adjustedCurve = GetCurveTransformCurve(m_adjustedTransCurves, m_NumSamples);
+                m_adjustedCurve = GetCurveTransformCurve(m_adjustedTransCurves, m_NumSamples, m_clip.length);
             else
                 Debug.Log("Compute curves first");
             SceneView.RepaintAll();
@@ -169,13 +169,14 @@ class PBAEditorWindow : EditorWindow
         return res;
     }
 
-    public Curve GetCurveTransformCurve(TransformCurves authoredCurves, int count)
+    public Curve GetCurveTransformCurve(TransformCurves authoredCurves, int count, float duration)
     {
         Curve res = new Curve();
 
+        float timePerCount = duration / count;
         for (int i = 0; i < count; i++)
         {
-            res.Positions.Add(authoredCurves.GetPosition(i));
+            res.Positions.Add(authoredCurves.GetPosition(timePerCount * i));
             res.Orientations.Add(Quaternion.identity);
         }
         return res;
@@ -185,7 +186,7 @@ class PBAEditorWindow : EditorWindow
     void OnSceneGUI(SceneView view)
     {
         m_comCurve.DrawCurve(showGizmos, Color.white);
-        m_physicallyAccurateCurve.DrawCurve(showGizmos, Color.green);
+        m_physicallyAccurateCurve.DrawCurve(showGizmos, Color.green, straightLines: true);
         m_adjustedCurve.DrawCurve(showGizmos, Color.cyan);
     }
 }
