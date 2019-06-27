@@ -68,8 +68,11 @@ class PBAEditorWindow : EditorWindow
         m_NumSamples = Mathf.Max(2, EditorGUILayout.IntField("Num samples", m_NumSamples));
         EditorGUILayout.Space();
         m_takeOffTime = EditorGUILayout.FloatField("Take Off time", m_takeOffTime);
-        EditorGUILayout.Space();
+        m_takeOffTime = Mathf.Clamp(m_takeOffTime, 0f, m_landTime);
         m_landTime = EditorGUILayout.FloatField("Land Time", m_landTime);
+        m_landTime = Mathf.Clamp(m_landTime, m_takeOffTime, m_clip.length);
+        EditorGUILayout.MinMaxSlider(GUIContent.none, ref m_takeOffTime, ref m_landTime, 0f, m_clip.length);
+
         EditorGUILayout.Space();
         m_gravity = EditorGUILayout.FloatField("Gravity", m_gravity);
         EditorGUILayout.Space();
