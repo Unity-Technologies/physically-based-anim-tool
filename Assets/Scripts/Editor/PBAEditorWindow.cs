@@ -24,6 +24,8 @@ class PBAEditorWindow : EditorWindow
     private float m_prevTakeOffTime = 0.0f;
     private float m_prevLandTime = 0.0f;
 
+    Vector3 m_ComOffsetHack;
+
     // Add menu named "My Window" to the Window menu
     [MenuItem("Window/Physically Based Animation Example")]
     static void Init()
@@ -114,6 +116,9 @@ class PBAEditorWindow : EditorWindow
             m_physicallyAccurateTransCurves = TransformCurves.GetTrajectoryCurves(m_oldComCurves, m_takeOffTime, m_landTime, m_gravity);
 
             m_adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, m_physicallyAccurateTransCurves);
+
+            m_clip.SampleAnimation(m_obj.gameObject, 0.0f);
+            m_ComOffsetHack = m_obj.CalculateCentreOfMass();
         }
 
         EditorGUILayout.Space();
@@ -155,6 +160,7 @@ class PBAEditorWindow : EditorWindow
         {
             m_comCurve.Clear();
             m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
+
             SceneView.RepaintAll();
         }
 
@@ -221,7 +227,14 @@ class PBAEditorWindow : EditorWindow
     {
        // m_oldComCurve.DrawCurve(m_showGizmos, Color.cyan);
         if (m_BezierDrawer != null)
-            m_BezierDrawer.DrawBezier(Color.red, 5f);
+        {
+            // Mega hack to line up COM curves:
+            Handles.matrix = Matrix4x4.TRS(
+                m_ComOffsetHack - m_BezierDrawer.StartPoint, Quaternion.identity, Vector3.one);
+            m_BezierDrawer.DrawBezier (Color.red, 5f);
+            Handles.matrix = Matrix4x4.identity;
+        }
+
 
         m_comCurve.DrawCurve(m_showGizmos, Color.cyan);
         if (m_comCurve.HasPoints)

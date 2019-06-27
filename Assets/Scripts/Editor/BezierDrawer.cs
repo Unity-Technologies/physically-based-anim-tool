@@ -26,6 +26,7 @@ public class BezierDrawer
     }
 
     Bezier3DPoints[] m_Curve;
+    public Vector3 StartPoint => m_Curve.Length > 0 ? m_Curve[0].p0 : Vector3.zero;
     
 
     public BezierDrawer(AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve)
