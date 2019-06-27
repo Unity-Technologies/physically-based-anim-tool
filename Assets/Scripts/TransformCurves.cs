@@ -23,6 +23,16 @@ public class TransformCurves
     readonly Vector3 m_DefaultPos;
     readonly Quaternion m_DefaultRot;
     readonly Vector3 m_DefaultScl;
+    EditorCurveBinding m_PosXBinding;
+    EditorCurveBinding m_PosYBinding;
+    EditorCurveBinding m_PosZBinding;
+    EditorCurveBinding m_RotXBinding;
+    EditorCurveBinding m_RotYBinding;
+    EditorCurveBinding m_RotZBinding;
+    EditorCurveBinding m_RotWBinding;
+    EditorCurveBinding m_SclXBinding;
+    EditorCurveBinding m_SclYBinding;
+    EditorCurveBinding m_SclZBinding;
 
     public TransformCurves(TransformCurves parent, Transform transform, AnimationClip clip)
     {
@@ -38,16 +48,26 @@ public class TransformCurves
             m_TransformPath = m_Parent.m_TransformPath + "/";
         m_TransformPath += transform.name;
 
-        m_PosX = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalPosition.x"));
-        m_PosY = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalPosition.y"));
-        m_PosZ = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalPosition.z"));
-        m_RotX = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.x"));
-        m_RotY = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.y"));
-        m_RotZ = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.z"));
-        m_RotW = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.w"));
-        m_SclX = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.x"));
-        m_SclY = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.y"));
-        m_SclZ = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.z"));
+        m_PosXBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalPosition.x");
+        m_PosX = AnimationUtility.GetEditorCurve(clip, m_PosXBinding);
+        m_PosYBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalPosition.y");
+        m_PosY = AnimationUtility.GetEditorCurve(clip, m_PosYBinding);
+        m_PosZBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalPosition.z");
+        m_PosZ = AnimationUtility.GetEditorCurve(clip, m_PosZBinding);
+        m_RotXBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.x");
+        m_RotX = AnimationUtility.GetEditorCurve(clip, m_RotXBinding);
+        m_RotYBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.y");
+        m_RotY = AnimationUtility.GetEditorCurve(clip, m_RotYBinding);
+        m_RotZBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.z");
+        m_RotZ = AnimationUtility.GetEditorCurve(clip, m_RotZBinding);
+        m_RotWBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalRotation.w");
+        m_RotW = AnimationUtility.GetEditorCurve(clip, m_RotWBinding);
+        m_SclXBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.x");
+        m_SclX = AnimationUtility.GetEditorCurve(clip, m_SclXBinding);
+        m_SclYBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.y");
+        m_SclY = AnimationUtility.GetEditorCurve(clip, m_SclYBinding);
+        m_SclZBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.z");
+        m_SclZ = AnimationUtility.GetEditorCurve(clip, m_SclZBinding);
     }
 
     public TransformCurves(TransformCurves copyFrom, AnimationCurve x, AnimationCurve y, AnimationCurve z)
@@ -232,6 +252,20 @@ public class TransformCurves
         TransformCurves rootCurves = new TransformCurves(comCurves, x, y, z);
         
         return rootCurves;
+    }
+
+    public void WriteCurves(AnimationClip clip)
+    {
+        AnimationUtility.SetEditorCurve(clip, m_PosXBinding, m_PosX);
+        AnimationUtility.SetEditorCurve(clip, m_PosYBinding, m_PosY);
+        AnimationUtility.SetEditorCurve(clip, m_PosZBinding, m_PosZ);
+        AnimationUtility.SetEditorCurve(clip, m_RotXBinding, m_RotX);
+        AnimationUtility.SetEditorCurve(clip, m_RotYBinding, m_RotY);
+        AnimationUtility.SetEditorCurve(clip, m_RotZBinding, m_RotZ);
+        AnimationUtility.SetEditorCurve(clip, m_RotWBinding, m_RotW);
+        AnimationUtility.SetEditorCurve(clip, m_SclXBinding, m_SclX);
+        AnimationUtility.SetEditorCurve(clip, m_SclYBinding, m_SclY);
+        AnimationUtility.SetEditorCurve(clip, m_SclZBinding, m_SclZ);
     }
 
     static float GetLateralTrajectory(float time, float duration, float distance)

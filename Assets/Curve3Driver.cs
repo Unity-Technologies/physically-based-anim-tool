@@ -30,7 +30,7 @@ public class Curve3Driver : MonoBehaviour
         }
         float t = Mathf.Clamp01(m_localTime / maxAnimLen);
 
-        Vector3 desiredCom = m_sourceCurve.EvaluatePoint(t);
+        Vector3 desiredCom = m_sourceCurve.curve.EvaluatePoint(t);
         Quaternion desiredOrientation = Quaternion.identity;
         Matrix4x4 worldFromDesired = Matrix4x4.TRS(desiredCom, desiredOrientation, new Vector3(1, 1, 1));
 

@@ -37,14 +37,7 @@ public static class AnimationInfo
 
     public static void WriteTransformCurves(AnimationClip clip, TransformCurves rootTransformCurves)
     {
-       /* AnimationUtility.SetEditorCurve(clip, s_RootTXCurveBinding, rootTransformCurves.m_PosX);
-        AnimationUtility.SetEditorCurve(clip, s_RootTYCurveBinding, rootTransformCurves.m_PosY);
-        AnimationUtility.SetEditorCurve(clip, s_RootTZCurveBinding, rootTransformCurves.m_PosZ);
-
-        AnimationUtility.SetEditorCurve(clip, s_RootQXCurveBinding, rootTransformCurves.m_RotX);
-        AnimationUtility.SetEditorCurve(clip, s_RootQYCurveBinding, rootTransformCurves.m_RotY);
-        AnimationUtility.SetEditorCurve(clip, s_RootQZCurveBinding, rootTransformCurves.m_RotZ);
-        AnimationUtility.SetEditorCurve(clip, s_RootQWCurveBinding, rootTransformCurves.m_RotW);*/
+        rootTransformCurves.WriteCurves(clip);
     }
 }
 
