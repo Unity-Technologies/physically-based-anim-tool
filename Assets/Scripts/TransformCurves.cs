@@ -34,6 +34,10 @@ public class TransformCurves
     EditorCurveBinding m_SclYBinding;
     EditorCurveBinding m_SclZBinding;
 
+    AnimationCurve m_DrawX;
+    AnimationCurve m_DrawY;
+    AnimationCurve m_DrawZ;
+
     public TransformCurves(TransformCurves parent, Animator animator, Transform transform, AnimationClip clip)
     {
         this.transform = transform;
