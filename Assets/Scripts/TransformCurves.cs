@@ -49,6 +49,26 @@ public class TransformCurves
         m_SclY = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.y"));
         m_SclZ = AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalScale.z"));
     }
+
+    public TransformCurves(TransformCurves copyFrom, AnimationCurve x, AnimationCurve y, AnimationCurve z)
+    {
+        m_TransformPath = copyFrom.m_TransformPath;
+        m_Parent = copyFrom.m_Parent;
+        m_DefaultPos = copyFrom.m_DefaultPos;
+        m_DefaultRot = copyFrom.m_DefaultRot;
+        m_DefaultScl = copyFrom.m_DefaultScl;
+        
+        m_PosX = x;
+        m_PosY = y;
+        m_PosZ = z;
+        m_RotX = copyFrom.m_RotX;
+        m_RotY = copyFrom.m_RotY;
+        m_RotZ = copyFrom.m_RotZ;
+        m_RotW = copyFrom.m_RotW;
+        m_SclX = copyFrom.m_SclX;
+        m_SclY = copyFrom.m_SclY;
+        m_SclZ = copyFrom.m_SclZ;
+    }
     
     Vector3 GetLocalPosition (float time)
     {
@@ -94,16 +114,70 @@ public class TransformCurves
 
     public static TransformCurves[] GetTransformCurvesHierarchy(Animator animator, AnimationClip clip)
     {
-        TransformCurves[] allCurves = new TransformCurves[animator.transform.hierarchyCount - 1];
         Transform currentTransform = animator.transform;
+        TransformCurves[] allCurves = new TransformCurves[currentTransform.hierarchyCount];
         TransformCurves currentCurves = null;
 
         for (int i = 0; i < allCurves.Length; i++)
         {
-            allCurves[i] = new TransformCurves(currentCurves, currentTransform, clip);
+            currentCurves = new TransformCurves(currentCurves, currentTransform, clip);
             currentTransform.GetNext();
+            allCurves[i] = currentCurves;
         }
 
         return allCurves;
+    }
+
+    public TransformCurves GetTrajectoryCurves(float takeOffTime, float landTime, float gravity = -9.81f)
+    {
+        return new TransformCurves(null, null, null);
+    }
+
+    public static TransformCurves ConvertRootCurvesToCOMCurves(Vector3[] rootToCOMs, float[] times,
+        TransformCurves rootCurves)
+    {
+        AnimationCurve x = new AnimationCurve();
+        AnimationCurve y = new AnimationCurve();
+        AnimationCurve z = new AnimationCurve();
+        
+        for (int i = 0; i < rootToCOMs.Length; i++)
+        {
+            Vector3 delta = rootToCOMs[i];
+            float time = times[i];
+
+            Vector3 com = delta + rootCurves.GetPosition(time);
+
+            x.AddKey(time, com.x);
+            y.AddKey(time, com.y);
+            z.AddKey(time, com.z);
+        }
+        
+        TransformCurves comCurves = new TransformCurves(rootCurves, x, y, z);
+
+        return comCurves;
+    }
+
+    public static TransformCurves ConvertCOMCurvesToRootCurves(Vector3[] rootToCOMs, float[] times,
+        TransformCurves comCurves)
+    {
+        AnimationCurve x = new AnimationCurve();
+        AnimationCurve y = new AnimationCurve();
+        AnimationCurve z = new AnimationCurve();
+        
+        for (int i = 0; i < rootToCOMs.Length; i++)
+        {
+            Vector3 delta = rootToCOMs[i];
+            float time = times[i];
+
+            Vector3 root = comCurves.GetPosition(time) - delta;
+
+            x.AddKey(time, root.x);
+            y.AddKey(time, root.y);
+            z.AddKey(time, root.z);
+        }
+
+        TransformCurves rootCurves = new TransformCurves(comCurves, x, y, z);
+        
+        return rootCurves;
     }
 }

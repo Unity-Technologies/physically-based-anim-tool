@@ -179,4 +179,9 @@ public static class AnimationWindowInfo
         AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootQZCurveBinding, rootMotionCurves.rootQZCurve);
         AnimationUtility.SetEditorCurve(s_AnimationClip, s_RootQWCurveBinding, rootMotionCurves.rootQWCurve);
     }
+
+    public static void WriteRootTransformCurves(TransformCurves rootTransformCurves)
+    {
+        // TODO: complete me
+    }
 }
