@@ -94,8 +94,8 @@ public class TransformCurves
     Vector3 GetLocalPosition (float time)
     {
         float x = m_PosX?.Evaluate(time) ?? m_DefaultPos.x;
-        float y = m_PosY?.Evaluate(time) ?? m_DefaultPos.x;
-        float z = m_PosZ?.Evaluate(time) ?? m_DefaultPos.x;
+        float y = m_PosY?.Evaluate(time) ?? m_DefaultPos.y;
+        float z = m_PosZ?.Evaluate(time) ?? m_DefaultPos.z;
 
         return new Vector3(x, y, z);
     }
@@ -103,9 +103,9 @@ public class TransformCurves
     Quaternion GetLocalRotation (float time)
     {
         float x = m_RotX?.Evaluate(time) ?? m_DefaultRot.x;
-        float y = m_RotY?.Evaluate(time) ?? m_DefaultRot.x;
-        float z = m_RotZ?.Evaluate(time) ?? m_DefaultRot.x;
-        float w = m_RotW?.Evaluate(time) ?? m_DefaultRot.x;
+        float y = m_RotY?.Evaluate(time) ?? m_DefaultRot.y;
+        float z = m_RotZ?.Evaluate(time) ?? m_DefaultRot.z;
+        float w = m_RotW?.Evaluate(time) ?? m_DefaultRot.w;
 
         return new Quaternion(x, y, z, w);
     }
@@ -113,8 +113,8 @@ public class TransformCurves
     Vector3 GetLocalScale (float time)
     {
         float x = m_SclX?.Evaluate(time) ?? m_DefaultScl.x;
-        float y = m_SclY?.Evaluate(time) ?? m_DefaultScl.x;
-        float z = m_SclZ?.Evaluate(time) ?? m_DefaultScl.x;
+        float y = m_SclY?.Evaluate(time) ?? m_DefaultScl.y;
+        float z = m_SclZ?.Evaluate(time) ?? m_DefaultScl.z;
 
         return new Vector3(x, y, z);
     }
