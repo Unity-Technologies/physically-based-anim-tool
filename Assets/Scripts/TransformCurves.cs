@@ -34,7 +34,7 @@ public class TransformCurves
     EditorCurveBinding m_SclYBinding;
     EditorCurveBinding m_SclZBinding;
 
-    public TransformCurves(TransformCurves parent, Transform transform, AnimationClip clip)
+    public TransformCurves(TransformCurves parent, Animator animator, Transform transform, AnimationClip clip)
     {
         this.transform = transform;
         
@@ -44,9 +44,7 @@ public class TransformCurves
         m_DefaultRot = transform.localRotation;
         m_DefaultScl = transform.localScale;
 
-        if (m_Parent != null)
-            m_TransformPath = m_Parent.m_TransformPath + "/";
-        m_TransformPath += transform.name;
+        m_TransformPath = AnimationUtility.CalculateTransformPath(transform, animator.transform);
 
         m_PosXBinding = EditorCurveBinding.FloatCurve(m_TransformPath, typeof(Transform), "m_LocalPosition.x");
         m_PosX = AnimationUtility.GetEditorCurve(clip, m_PosXBinding);
@@ -143,7 +141,7 @@ public class TransformCurves
 
         for (int i = 0; i < allCurves.Length; i++)
         {
-            currentCurves = new TransformCurves(currentCurves, currentTransform, clip);
+            currentCurves = new TransformCurves(currentCurves, animator, currentTransform, clip);
             currentTransform = currentTransform.GetNext();
             allCurves[i] = currentCurves;
         }
