@@ -119,7 +119,7 @@ class PBAEditorWindow : EditorWindow
         EditorGUILayout.Space();
 
         var style = new GUIStyle(GUI.skin.button);
-        style.normal.textColor = Color.cyan;
+        /*style.normal.textColor = Color.cyan;
         if (GUILayout.Button("Draw old COM curves", style)
             || (userChangedOptions && m_adjustedCurve.HasPoints))
         {
@@ -129,7 +129,7 @@ class PBAEditorWindow : EditorWindow
             else
                 Debug.Log("Compute curves first");
             SceneView.RepaintAll();
-        }
+        }*/
         EditorGUILayout.Space();
 
         style.normal.textColor = Color.red;
@@ -150,7 +150,7 @@ class PBAEditorWindow : EditorWindow
         style.normal.textColor = Color.cyan;
 
         //Draw center of mass
-        if (GUILayout.Button("Draw COM curves", style)
+        if (GUILayout.Button("Draw old COM curves", style)
             || (userChangedOptions && m_comCurve.HasPoints))
         {
             m_comCurve.Clear();
@@ -219,10 +219,15 @@ class PBAEditorWindow : EditorWindow
     BezierDrawer m_BezierDrawer;
     void OnSceneGUI(SceneView view)
     {
-        m_oldComCurve.DrawCurve(m_showGizmos, Color.cyan);
+       // m_oldComCurve.DrawCurve(m_showGizmos, Color.cyan);
         if (m_BezierDrawer != null)
             m_BezierDrawer.DrawBezier(Color.red, 5f);
         m_comCurve.DrawCurve(m_showGizmos, Color.cyan);
+        if (m_comCurve.HasPoints)
+        {
+            Handles.SphereHandleCap(0, m_comCurve.EvaluatePoint(m_takeOffTime / m_clip.length), Quaternion.identity, 0.1f, EventType.Repaint);
+            Handles.SphereHandleCap(0, m_comCurve.EvaluatePoint(m_landTime / m_clip.length), Quaternion.identity, 0.1f, EventType.Repaint);
+        }
     }
 }
 
