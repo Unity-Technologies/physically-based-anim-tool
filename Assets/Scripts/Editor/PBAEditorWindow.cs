@@ -9,6 +9,8 @@ class PBAEditorWindow : EditorWindow
     private Curve m_comCurve = new Curve();
     private int m_NumSamples = 10;
     private AnimationClip m_clip;
+    private TransformCurves m_physicallyAccurateCOMCurves = null;
+    private TransformCurves m_adjustedTransCurves = null;
 
     // Add menu named "My Window" to the Window menu
     [MenuItem("Window/Physically Based Animation Example")]
@@ -60,42 +62,51 @@ class PBAEditorWindow : EditorWindow
             m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
         }
 
-        //Draw authored curves
-        TransformCurves[] hierarchyCurves = m_obj.GetTransformCurves(m_clip);
-
-        int frameCount = 10;
-        float timePerFrame = m_clip.length / frameCount;
-        Vector3[] rootToCOMs = new Vector3[frameCount];
-        float[] times = new float[frameCount];
-        for (int i = 0; i < frameCount; i++)
+        EditorGUILayout.Space();
+        if (GUILayout.Button("Compute Curves"))
         {
-            times[i] = i * timePerFrame;
-            Vector3 comAtTime = m_obj.CalculateCentreOfMass(hierarchyCurves, times[i]);
-            Vector3 rootAtTime = hierarchyCurves[0].GetPosition(times[i]);
-            rootToCOMs[i] = comAtTime - rootAtTime;
+            //Draw authored curves
+            TransformCurves[] hierarchyCurves = m_obj.GetTransformCurves(m_clip);
+
+            float timePerFrame = m_clip.length / m_NumSamples;
+            Vector3[] rootToCOMs = new Vector3[m_NumSamples];
+            float[] times = new float[m_NumSamples];
+            for (int i = 0; i < m_NumSamples; i++)
+            {
+                times[i] = i * timePerFrame;
+                Vector3 comAtTime = m_obj.CalculateCentreOfMass(hierarchyCurves, times[i]);
+                Vector3 rootAtTime = hierarchyCurves[0].GetPosition(times[i]);
+                rootToCOMs[i] = comAtTime - rootAtTime;
+            }
+
+            TransformCurves comCurves = TransformCurves.ConvertRootCurvesToCOMCurves(rootToCOMs, times, hierarchyCurves[0]);    // DONE
+
+            float takeOffTime = 0.1f;
+            float landTime = 0.9f;
+            float gravity = 0.0f;
+            m_physicallyAccurateCOMCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime, gravity);
+
+            m_adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, m_physicallyAccurateCOMCurves);
         }
-
-        TransformCurves comCurves = TransformCurves.ConvertRootCurvesToCOMCurves(rootToCOMs, times, hierarchyCurves[0]);    // DONE
-
-        float takeOffTime = 0.1f;
-        float landTime = 0.9f;
-        TransformCurves physicallyAccurateCOMCurves = TransformCurves.GetTrajectoryCurves(comCurves, takeOffTime, landTime);
 
         EditorGUILayout.Space();
         if (GUILayout.Button("Draw physically accurate curve"))
         {
             m_physicallyAccurateCurve.Clear();
-            m_physicallyAccurateCurve = GetCurveTransformCurve(physicallyAccurateCOMCurves, m_NumSamples);
+            if (m_physicallyAccurateCOMCurves != null)
+                m_physicallyAccurateCurve = GetCurveTransformCurve(m_physicallyAccurateCOMCurves, m_NumSamples);
+            else
+                Debug.Log("Compute curves first");
         }
         EditorGUILayout.Space();
 
-        TransformCurves adjustedTransCurves = TransformCurves.ConvertCOMCurvesToRootCurves(rootToCOMs, times, physicallyAccurateCOMCurves);
-
-        EditorGUILayout.Space();
         if (GUILayout.Button("Draw adjusted curve"))
         {
             m_adjustedCurve.Clear();
-            m_adjustedCurve = GetCurveTransformCurve(adjustedTransCurves, m_NumSamples);
+            if(m_adjustedTransCurves != null)
+                m_adjustedCurve = GetCurveTransformCurve(m_adjustedTransCurves, m_NumSamples);
+            else
+                Debug.Log("Compute curves first");
         }
         EditorGUILayout.Space();
 
@@ -103,7 +114,10 @@ class PBAEditorWindow : EditorWindow
         if(GUILayout.Button("Save"))
         {
             Undo.RecordObject(m_clip, "Changed Root AnimationCurves");
-            AnimationInfo.WriteTransformCurves(m_clip, adjustedTransCurves);
+            if (m_adjustedTransCurves != null)
+                AnimationInfo.WriteTransformCurves(m_clip, m_adjustedTransCurves);
+            else
+                Debug.Log("Compute curves first");
         }
 
         EditorGUILayout.EndVertical();
