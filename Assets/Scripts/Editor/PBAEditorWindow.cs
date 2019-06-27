@@ -95,6 +95,9 @@ class PBAEditorWindow : EditorWindow
         style.normal.textColor = Color.green;
         if (GUILayout.Button("Draw physically accurate curve", style))
         {
+            m_BezierDrawer = new BezierDrawer(m_physicallyAccurateTransCurves.m_PosX, m_physicallyAccurateTransCurves.m_PosY, m_physicallyAccurateTransCurves.m_PosZ);
+            
+            
             m_physicallyAccurateCurve.Clear();
             if (m_physicallyAccurateTransCurves != null)
                 m_physicallyAccurateCurve = GetCurveTransformCurve(m_physicallyAccurateTransCurves, m_NumSamples, m_clip.length);
@@ -182,9 +185,11 @@ class PBAEditorWindow : EditorWindow
         return res;
     }
 
-
+    BezierDrawer m_BezierDrawer;
     void OnSceneGUI(SceneView view)
     {
+        if (m_BezierDrawer != null)
+            m_BezierDrawer.DrawBezier(Color.red, 5f);
         m_comCurve.DrawCurve(showGizmos, Color.white);
         m_physicallyAccurateCurve.DrawCurve(showGizmos, Color.green, straightLines: true);
         m_adjustedCurve.DrawCurve(showGizmos, Color.cyan);

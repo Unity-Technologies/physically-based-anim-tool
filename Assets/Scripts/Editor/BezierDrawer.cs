@@ -14,6 +14,14 @@ public class BezierDrawer
         public Vector2 p3;
     }
 
+    struct New2DPoints
+    {
+        public float p0;
+        public float p1;
+        public float p2;
+        public float p3;
+    }
+
     struct Bezier3DPoints
     {
         public Vector3 p0;
@@ -25,7 +33,7 @@ public class BezierDrawer
     Bezier3DPoints[] m_Curve;
 
     // for each keyframe go through this to get a bunch of bezier points (length - 1)
-    Bezier2DPoints GetBezierPointsFromKeyframes(Keyframe first, Keyframe second)
+    /*Bezier2DPoints GetBezierPointsFromKeyframes(Keyframe first, Keyframe second)
     {
         Bezier2DPoints bezier2DPoints = new Bezier2DPoints();
         
@@ -35,6 +43,18 @@ public class BezierDrawer
         bezier2DPoints.p1 = new Vector2(first.time + deltaTime * first.outWeight, first.value + first.outTangent * deltaTime * first.outWeight);
         bezier2DPoints.p2 = new Vector2(second.time + deltaTime * second.inWeight, second.value + second.inTangent * deltaTime * second.inWeight);
         bezier2DPoints.p3 = new Vector2(second.time, second.value);
+
+        return bezier2DPoints;
+    }*/
+    
+    New2DPoints GetBezierPointsFromKeyframes(Keyframe first, Keyframe second)
+    {
+        New2DPoints bezier2DPoints = new New2DPoints();
+        
+        bezier2DPoints.p0 = first.value;
+        bezier2DPoints.p1 = first.value + first.outTangent * first.outWeight;
+        bezier2DPoints.p2 = second.value - second.inTangent * second.inWeight;
+        bezier2DPoints.p3 = second.value;
 
         return bezier2DPoints;
     }
@@ -79,7 +99,7 @@ public class BezierDrawer
         secondHalf.p3 = input.p3;
     }
 
-    public BezierDrawer(AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve)
+    /*public BezierDrawer(AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve)
     {
         List<Bezier2DPoints> xPoints = new List<Bezier2DPoints>(xCurve.length - 1);
         for (int i = 0; i < xCurve.length - 1; i++)
@@ -104,6 +124,33 @@ public class BezierDrawer
         AddCutsToPoints(zPoints, ref xPoints, ref yPoints);
 
         m_Curve = ConvertBezier2DsToBezier3Ds(xPoints, yPoints, zPoints);
+    }*/
+
+    public BezierDrawer(AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve)
+    {
+        List<New2DPoints> xPoints = new List<New2DPoints>(xCurve.length - 1);
+        for (int i = 0; i < xCurve.length - 1; i++)
+        {
+            xPoints.Add(GetBezierPointsFromKeyframes(xCurve[i], xCurve[i + 1]));
+        }
+        
+        List<New2DPoints> yPoints = new List<New2DPoints>(yCurve.length - 1);
+        for (int i = 0; i < yCurve.length - 1; i++)
+        {
+            yPoints.Add(GetBezierPointsFromKeyframes(yCurve[i], yCurve[i + 1]));
+        }
+        
+        List<New2DPoints> zPoints = new List<New2DPoints>(zCurve.length - 1);
+        for (int i = 0; i < zCurve.length - 1; i++)
+        {
+            zPoints.Add(GetBezierPointsFromKeyframes(zCurve[i], zCurve[i + 1]));
+        }
+        
+        //AddCutsToPoints(xPoints, ref yPoints, ref zPoints);
+        //AddCutsToPoints(yPoints, ref xPoints, ref zPoints);
+        //AddCutsToPoints(zPoints, ref xPoints, ref yPoints);
+
+        //m_Curve = ConvertBezier2DsToBezier3Ds(xPoints, yPoints, zPoints);
     }
 
     Bezier3DPoints[] ConvertBezier2DsToBezier3Ds(List<Bezier2DPoints> x, List<Bezier2DPoints> y, List<Bezier2DPoints> z)
@@ -128,7 +175,85 @@ public class BezierDrawer
         return bezier3DPoints;
     }
 
-    void AddCutsToPoints(List<Bezier2DPoints> toCheck, ref List<Bezier2DPoints> toAugment1,
+    /*void AddCutsToPoints(List<New2DPoints> toCheck, ref List<New2DPoints> toAugment1,
+        ref List<New2DPoints> toAugment2)
+    {
+        for (int i = 0; i < toCheck.Count; i++)
+        {
+            New2DPoints checkPoints = toCheck[i];
+            bool doCut = true;
+            int cutIndex = -1;
+
+            for (int j = 0; j < toAugment1.Count; j++)
+            {
+                if (Mathf.Approximately(checkPoints.p0.x, toAugment1[j].p0.x))
+                {
+                    doCut = false;
+                }
+
+                if (toAugment1[j].p0.x < checkPoints.p0.x && toAugment1[j].p3.x > checkPoints.p0.x)
+                {
+                    cutIndex = j;
+                }
+            }
+
+            if (doCut)
+            {
+                New2DPoints toCut = toAugment1[cutIndex];
+                CutBezier2D(toCut, checkPoints.p0.x, out New2DPoints firstHalf, out New2DPoints secondHalf);
+                
+                toAugment1.RemoveAt(cutIndex);
+
+                if (cutIndex == toAugment1.Count)
+                {
+                    toAugment1.Add(firstHalf);
+                    toAugment1.Add(secondHalf);
+                }
+                else
+                {
+                    toAugment1.Insert(cutIndex, secondHalf);
+                    toAugment1.Insert(cutIndex, firstHalf);                    
+                }
+            }
+            
+            doCut = true;
+            cutIndex = -1;
+
+            for (int j = 0; j < toAugment2.Count; j++)
+            {
+                if (Mathf.Approximately(checkPoints.p0.x, toAugment2[j].p0.x))
+                {
+                    doCut = false;
+                }
+
+                if (toAugment2[j].p0.x < checkPoints.p0.x && toAugment2[j].p3.x > checkPoints.p0.x)
+                {
+                    cutIndex = j;
+                }
+            }
+
+            if (doCut)
+            {
+                New2DPoints toCut = toAugment2[cutIndex];
+                CutBezier2D(toCut, checkPoints.p0.x, out New2DPoints firstHalf, out New2DPoints secondHalf);
+                
+                toAugment2.RemoveAt(cutIndex);
+
+                if (cutIndex == toAugment2.Count)
+                {
+                    toAugment2.Add(firstHalf);
+                    toAugment2.Add(secondHalf);
+                }
+                else
+                {
+                    toAugment2.Insert(cutIndex, secondHalf);
+                    toAugment2.Insert(cutIndex, firstHalf);                    
+                }
+            }
+        }
+    }
+    
+    /*void AddCutsToPoints(List<Bezier2DPoints> toCheck, ref List<Bezier2DPoints> toAugment1,
         ref List<Bezier2DPoints> toAugment2)
     {
         for (int i = 0; i < toCheck.Count; i++)
@@ -204,7 +329,7 @@ public class BezierDrawer
                 }
             }
         }
-    }
+    }*/
     
     public void DrawBezier(Color color, float thickness)
     {
