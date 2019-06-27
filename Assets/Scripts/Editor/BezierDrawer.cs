@@ -58,10 +58,10 @@ public class BezierDrawer
     Bezier1DPoints GetBezierPointsFromKeyframes(Keyframe first, Keyframe second)
     {
         Bezier1DPoints bezier2DPoints = new Bezier1DPoints();
-        
+        float deltaTime = second.time - first.time;
         bezier2DPoints.p0 = first.value;
-        bezier2DPoints.p1 = first.value + first.outTangent * first.outWeight;
-        bezier2DPoints.p2 = second.value - second.inTangent * second.inWeight;
+        bezier2DPoints.p1 = first.value + first.outTangent * first.outWeight * deltaTime;// / (first.outWeight + second.inWeight);
+        bezier2DPoints.p2 = second.value - second.inTangent * second.inWeight * deltaTime;// / (first.outWeight + second.inWeight);
         bezier2DPoints.p3 = second.value;
         bezier2DPoints.startTime = first.time;
         bezier2DPoints.endTime = second.time;
@@ -186,9 +186,13 @@ public class BezierDrawer
 
             bezier3DPoints[i] = new Bezier3DPoints();
             bezier3DPoints[i].p0 = new Vector3(xPoint.p0, yPoint.p0, zPoint.p0);
-            bezier3DPoints[i].p1 = new Vector3(xPoint.p1, yPoint.p1, zPoint.p1);
+            bezier3DPoints[i].p1 = new Vector3(xPoint.p1, yPoint.p1, zPoint.p1) ;
             bezier3DPoints[i].p2 = new Vector3(xPoint.p2, yPoint.p2, zPoint.p2);
             bezier3DPoints[i].p3 = new Vector3(xPoint.p3, yPoint.p3, zPoint.p3);
+
+            //bezier3DPoints[i].p1 = (bezier3DPoints[i].p1 - bezier3DPoints[i].p0) * 0.1f + bezier3DPoints[i].p0;
+            //bezier3DPoints[i].p2 = (bezier3DPoints[i].p2 - bezier3DPoints[i].p3) * 0.1f + bezier3DPoints[i].p3;
+
         }
 
         return bezier3DPoints;
