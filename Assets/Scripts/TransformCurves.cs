@@ -212,11 +212,23 @@ public class TransformCurves
             }
         }
 
+        float requiredInitialSpeed = (delta.y - 0.5f * gravity * duration * duration) / duration;
+
         while (time < landTime)
         {
-            x.AddKey(new Keyframe(time, GetLateralTrajectory(time, duration, delta.x) + takeOffPosition.x));
-            y.AddKey(new Keyframe(time, GetVerticalTrajectory(time, duration, gravity) + takeOffPosition.y));
-            z.AddKey(new Keyframe(time, GetLateralTrajectory(time, duration, delta.z) + takeOffPosition.z));
+            if (time >= takeOffTime && time <= landTime)
+            {
+                y.AddKey(new Keyframe(time, GetVerticalTrajectory2(time - takeOffTime, requiredInitialSpeed, gravity) + takeOffPosition.y));
+                x.AddKey(new Keyframe(time, GetLateralTrajectory(time - takeOffTime, duration, delta.x) + takeOffPosition.x));
+                z.AddKey(new Keyframe(time, GetLateralTrajectory(time - takeOffTime, duration, delta.z) + takeOffPosition.z));
+            }
+            else
+            {
+                var comT = comCurves.GetPosition(time);
+                x.AddKey(new Keyframe(time, comT.x));
+                y.AddKey(new Keyframe(time, comT.y));
+                z.AddKey(new Keyframe(time, comT.z));
+            }
             
             if (Mathf.Approximately(comCurves.m_PosX[xIndex].time, time))
                 xIndex++;
@@ -326,5 +338,10 @@ public class TransformCurves
     static float GetVerticalTrajectory(float time, float duration, float gravity)
     {
         return 0.5f * gravity * time * time - 0.5f * gravity * duration * time;
+    }
+
+    static float GetVerticalTrajectory2(float time, float u, float a)
+    {
+        return u * time + 0.5f * a * time * time;
     }
 }
