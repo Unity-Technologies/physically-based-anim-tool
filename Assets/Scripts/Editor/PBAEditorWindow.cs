@@ -92,7 +92,7 @@ class PBAEditorWindow : EditorWindow
 
         EditorGUILayout.Space();
         var style = new GUIStyle(GUI.skin.button);
-        style.normal.textColor = Color.cyan;
+        style.normal.textColor = Color.green;
         if (GUILayout.Button("Draw physically accurate curve", style))
         {
             m_physicallyAccurateCurve.Clear();
@@ -100,10 +100,11 @@ class PBAEditorWindow : EditorWindow
                 m_physicallyAccurateCurve = GetCurveTransformCurve(m_physicallyAccurateTransCurves, m_NumSamples);
             else
                 Debug.Log("Compute curves first");
+            SceneView.RepaintAll();
         }
         EditorGUILayout.Space();
 
-        style.normal.textColor = Color.green;
+        style.normal.textColor = Color.cyan;
         if (GUILayout.Button("Draw adjusted curve", style))
         {
             m_adjustedCurve.Clear();
@@ -111,6 +112,7 @@ class PBAEditorWindow : EditorWindow
                 m_adjustedCurve = GetCurveTransformCurve(m_adjustedTransCurves, m_NumSamples);
             else
                 Debug.Log("Compute curves first");
+            SceneView.RepaintAll();
         }
         EditorGUILayout.Space();
 
@@ -120,6 +122,7 @@ class PBAEditorWindow : EditorWindow
         {
             m_comCurve.Clear();
             m_comCurve = GetCOMCurves(m_clip, m_NumSamples);
+            SceneView.RepaintAll();
         }
 
         EditorGUILayout.Space();
