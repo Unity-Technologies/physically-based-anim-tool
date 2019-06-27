@@ -163,17 +163,53 @@ public class TransformCurves
         Vector3 landPosition = comCurves.GetPosition(landTime);
         Vector3 delta = landPosition - takeOffPosition;
         
-        int xIndex = 0;
-        int yIndex = 0;
-        int zIndex = 0;
-
-        float time = 0f;
+        float time = takeOffTime;
         
-        AnimationCurve x = new AnimationCurve();
-        AnimationCurve y = new AnimationCurve();
-        AnimationCurve z = new AnimationCurve();
+        int xIndex = -1;
+        int yIndex = -1;
+        int zIndex = -1;
+        
+        AnimationCurve x = comCurves.m_PosX;
+        AnimationCurve y = comCurves.m_PosY;
+        AnimationCurve z = comCurves.m_PosZ;
 
-        while (xIndex < comCurves.m_PosX.length || yIndex < comCurves.m_PosY.length || zIndex < comCurves.m_PosZ.length)
+        for (int i = 0; i < x.length; i++)
+        {
+            float keyTime = x[i].time;
+            if (keyTime >= takeOffTime && keyTime <= landTime)
+            {
+                x.RemoveKey(i);
+
+                if (xIndex == -1)
+                    xIndex = i;
+            }
+        }
+        
+        for (int i = 0; i < y.length; i++)
+        {
+            float keyTime = y[i].time;
+            if (keyTime >= takeOffTime && keyTime <= landTime)
+            {
+                y.RemoveKey(i);
+
+                if (yIndex == -1)
+                    yIndex = i;
+            }
+        }
+        
+        for (int i = 0; i < z.length; i++)
+        {
+            float keyTime = z[i].time;
+            if (keyTime >= takeOffTime && keyTime <= landTime)
+            {
+                z.RemoveKey(i);
+
+                if (zIndex == -1)
+                    zIndex = i;
+            }
+        }
+
+        while (time < landTime)
         {
             x.AddKey(new Keyframe(time, GetLateralTrajectory(time, duration, delta.x) + takeOffPosition.x));
             y.AddKey(new Keyframe(time, GetVerticalTrajectory(time, duration, gravity) + takeOffPosition.y));
@@ -198,14 +234,20 @@ public class TransformCurves
         
         for (int i = 0; i < x.length; i++)
         {
-            AnimationUtility.SetKeyLeftTangentMode (x, i, AnimationUtility.TangentMode.ClampedAuto);
-            AnimationUtility.SetKeyRightTangentMode (x, i, AnimationUtility.TangentMode.ClampedAuto);
-            
-            AnimationUtility.SetKeyLeftTangentMode (y, i, AnimationUtility.TangentMode.ClampedAuto);
-            AnimationUtility.SetKeyRightTangentMode (y, i, AnimationUtility.TangentMode.ClampedAuto);
-            
-            AnimationUtility.SetKeyLeftTangentMode (z, i, AnimationUtility.TangentMode.ClampedAuto);
-            AnimationUtility.SetKeyRightTangentMode (z, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyLeftTangentMode(x, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode(x, i, AnimationUtility.TangentMode.ClampedAuto);
+        }
+
+        for (int i = 0; i < y.length; i++)
+        {
+            AnimationUtility.SetKeyLeftTangentMode(y, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode(y, i, AnimationUtility.TangentMode.ClampedAuto);
+        }
+        
+        for (int i = 0; i < z.length; i++)
+        {
+            AnimationUtility.SetKeyLeftTangentMode(z, i, AnimationUtility.TangentMode.ClampedAuto);
+            AnimationUtility.SetKeyRightTangentMode(z, i, AnimationUtility.TangentMode.ClampedAuto);
         }
         
         return new TransformCurves(comCurves, x, y, z);
