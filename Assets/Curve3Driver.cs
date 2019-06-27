@@ -23,7 +23,7 @@ public class Curve3Driver : MonoBehaviour
         var csm = GetComponent<CentredSkinnedMesh>();
         if (csm == null) return;
 
-        Vector3 desiredCom = m_sourceCurve.EvaluatePoint(m_localTime);
+        Vector3 desiredCom = m_sourceCurve.curve.EvaluatePoint(m_localTime);
         Quaternion desiredOrientation = Quaternion.identity;
         Matrix4x4 worldFromDesired = Matrix4x4.TRS(desiredCom, desiredOrientation, new Vector3(1, 1, 1));
 

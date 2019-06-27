@@ -13,7 +13,7 @@ public struct RootMotionCurves
     public AnimationCurve rootQZCurve;
     public AnimationCurve rootQWCurve;
 
-    List<float> m_KeyTimes;
+    public List<float> m_KeyTimes;
     
     public RootMotionCurves GetTrajectoryCurves(float takeOffTime, float landTime, float gravity = -9.81f)
     {
