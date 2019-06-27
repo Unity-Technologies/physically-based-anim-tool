@@ -82,6 +82,7 @@ class PBAEditorWindow : EditorWindow
         EditorGUILayout.Space();
 
         bool userChangedOptions = m_obj != m_prevObj || m_NumSamples != m_prevNumSamples;
+        userChangedOptions |= m_physicallyAccurateTransCurves == null;
 
         if (userChangedOptions)
         {
