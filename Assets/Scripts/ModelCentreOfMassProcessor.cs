@@ -7,23 +7,22 @@ public class ModelCentreOfMassProcessor : AssetPostprocessor
 {
     void OnPostprocessModel (GameObject g)
     {
-        Debug.Log("onpostprocessmodel: " + g.name);
         SkinnedMeshRenderer[] allSkinnedMeshRenderers = g.GetComponentsInChildren<SkinnedMeshRenderer> ();
         
-        if(allSkinnedMeshRenderers.Length != 1)
-            return;
-
-        SkinnedMeshRenderer skinnedMeshRenderer = allSkinnedMeshRenderers[0];
-
-        Mesh mesh = skinnedMeshRenderer.sharedMesh;
-        
-        Transform[] bones = skinnedMeshRenderer.bones;
-        
-        float[] boneMasses = TetrahedronVolumeToBoneMasses (mesh, bones);
-
         CentredSkinnedMesh centredSkinnedMesh = g.AddComponent<CentredSkinnedMesh> ();
         
-        centredSkinnedMesh.SetBoneMasses (bones, boneMasses);
+        for (int i = 0; i < allSkinnedMeshRenderers.Length; i++)
+        {
+            SkinnedMeshRenderer skinnedMeshRenderer = allSkinnedMeshRenderers[0];
+
+            Mesh mesh = skinnedMeshRenderer.sharedMesh;
+        
+            Transform[] bones = skinnedMeshRenderer.bones;
+        
+            float[] boneMasses = TetrahedronVolumeToBoneMasses (mesh, bones);
+
+            centredSkinnedMesh.AddBoneMasses (bones, boneMasses);
+        }
     }
 
     static float[] TetrahedronVolumeToBoneMasses (Mesh mesh, Transform[] bones)

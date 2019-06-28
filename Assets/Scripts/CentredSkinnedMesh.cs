@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ public class CentredSkinnedMesh : MonoBehaviour
     [SerializeField]
     Vector3 m_CentreOfMass; 
     [SerializeField]
-    BoneMass[] m_BoneMasses;
+    List<BoneMass> m_BoneMasses;
     [SerializeField]
     CenterOfMass com = new CenterOfMass();
     public CenterOfMass COM => com;
@@ -40,16 +41,17 @@ public class CentredSkinnedMesh : MonoBehaviour
     [SerializeField]
     GameObject m_SkeletonRoot;
 
-    public void SetBoneMasses (Transform[] bones, float[] weightedMasses)
+    public void AddBoneMasses (Transform[] bones, float[] weightedMasses)
     {
         if(bones.Length != weightedMasses.Length)
             throw new UnityException("Bones and weighted masses are not the same length.  Make sure there is one weighted mass per bone.");
         
-        m_BoneMasses = new BoneMass[bones.Length];
+        if(m_BoneMasses == null)
+            m_BoneMasses = new List<BoneMass>(bones.Length);
 
-        for (int i = 0; i < m_BoneMasses.Length; i++)
+        for (int i = 0; i < bones.Length; i++)
         {
-            m_BoneMasses[i] = new BoneMass (bones[i], weightedMasses[i]);
+            m_BoneMasses.Add(new BoneMass (bones[i], weightedMasses[i]));
         }
     }
 
@@ -57,7 +59,7 @@ public class CentredSkinnedMesh : MonoBehaviour
     {
         float summedWeight = 0f;
         com.pos = Vector3.zero;
-        for (int i = 0; i < m_BoneMasses.Length; i++)
+        for (int i = 0; i < m_BoneMasses.Count; i++)
         {
             com.pos += m_BoneMasses[i].GetBoneCentreOfMass ();
             summedWeight += m_BoneMasses[i].relativeDensity * m_BoneMasses[i].mass;
@@ -82,7 +84,7 @@ public class CentredSkinnedMesh : MonoBehaviour
         {
             TransformCurves transformCurves = hierarchyCurves[i];
             
-            for (int j = 0; j < m_BoneMasses.Length; j++)
+            for (int j = 0; j < m_BoneMasses.Count; j++)
             {
                 BoneMass boneMass = m_BoneMasses[j];
 
