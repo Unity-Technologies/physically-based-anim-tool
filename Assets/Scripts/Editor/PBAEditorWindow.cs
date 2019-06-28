@@ -8,7 +8,7 @@ class PBAEditorWindow : EditorWindow
     private Curve m_adjustedCurve = new Curve();
     private Curve m_comCurve = new Curve();
     private Curve m_oldComCurve = new Curve();
-    private int m_NumSamples = 10;
+    private int m_NumSamples = 100;
     private AnimationClip m_clip;
     private TransformCurves m_physicallyAccurateTransCurves = null;
     private TransformCurves m_adjustedTransCurves = null;
@@ -23,6 +23,7 @@ class PBAEditorWindow : EditorWindow
     private int m_prevNumSamples = 0;
     private float m_prevTakeOffTime = 0.0f;
     private float m_prevLandTime = 0.0f;
+    float m_prevGravity = 0f;
 
     Vector3 m_ComOffsetHack;
 
@@ -87,7 +88,7 @@ class PBAEditorWindow : EditorWindow
 
         EditorGUILayout.Space();
 
-        bool userChangedOptions = m_obj != m_prevObj || m_NumSamples != m_prevNumSamples || m_takeOffTime != m_prevTakeOffTime || m_landTime != m_prevLandTime;
+        bool userChangedOptions = m_obj != m_prevObj || m_NumSamples != m_prevNumSamples || m_takeOffTime != m_prevTakeOffTime || m_landTime != m_prevLandTime || !Mathf.Approximately(m_gravity, m_prevGravity);
         userChangedOptions |= m_physicallyAccurateTransCurves == null;
 
         if (userChangedOptions)
@@ -96,6 +97,7 @@ class PBAEditorWindow : EditorWindow
             m_prevNumSamples = m_NumSamples;
             m_prevLandTime = m_landTime;
             m_prevTakeOffTime = m_takeOffTime;
+            m_prevGravity = m_gravity;
 
             //Draw authored curves
             TransformCurves[] hierarchyCurves = m_obj.GetTransformCurves(m_clip);
