@@ -7,6 +7,7 @@ public class ModelCentreOfMassProcessor : AssetPostprocessor
 {
     void OnPostprocessModel (GameObject g)
     {
+        Debug.Log("onpostprocessmodel: " + g.name);
         SkinnedMeshRenderer[] allSkinnedMeshRenderers = g.GetComponentsInChildren<SkinnedMeshRenderer> ();
         
         if(allSkinnedMeshRenderers.Length != 1)
