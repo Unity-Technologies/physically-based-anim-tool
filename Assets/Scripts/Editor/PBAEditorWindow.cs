@@ -8,7 +8,7 @@ class PBAEditorWindow : EditorWindow
     private Curve m_adjustedCurve = new Curve();
     private Curve m_comCurve = new Curve();
     private Curve m_oldComCurve = new Curve();
-    private int m_NumSamples = 10;
+    private int m_NumSamples = 100;
     private AnimationClip m_clip;
     private TransformCurves m_physicallyAccurateTransCurves = null;
     private TransformCurves m_adjustedTransCurves = null;
